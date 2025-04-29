@@ -8,7 +8,7 @@ const Footer = () => {
         <div className="flex flex-col md:flex-row justify-between items-center">
           <div className="mb-8 md:mb-0">
             <img 
-              src="/lovable-uploads/76c9814c-8024-4b1e-98f1-8f8d20e9aee4.png" 
+              src="/lovable-uploads/006089d8-3939-4856-b7bb-dd754b0fe3b7.png" 
               alt="Fundora Logo" 
               className="h-12"
             />
