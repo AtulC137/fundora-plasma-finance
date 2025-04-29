@@ -1,26 +1,26 @@
 
-import { Dollar } from "lucide-react";
+import { DollarSign } from "lucide-react";
 
 const features = [
   {
     title: "Invoice Tokenization",
     description: "Convert your invoices into tradable digital assets on the blockchain.",
-    icon: <Dollar className="h-10 w-10 text-fundora-cyan" />,
+    icon: <DollarSign className="h-10 w-10 text-fundora-cyan" />,
   },
   {
     title: "Instant Liquidity",
     description: "Access capital within minutes, not weeks, with our DeFi lending pools.",
-    icon: <Dollar className="h-10 w-10 text-fundora-blue" />,
+    icon: <DollarSign className="h-10 w-10 text-fundora-blue" />,
   },
   {
     title: "Global Marketplace",
     description: "Connect with lenders worldwide for the best financing rates.",
-    icon: <Dollar className="h-10 w-10 text-fundora-pink" />,
+    icon: <DollarSign className="h-10 w-10 text-fundora-pink" />,
   },
   {
     title: "Secure Contracts",
     description: "Smart contracts ensure transparent and immutable agreement terms.",
-    icon: <Dollar className="h-10 w-10 text-fundora-purple" />,
+    icon: <DollarSign className="h-10 w-10 text-fundora-purple" />,
   },
 ];
 
