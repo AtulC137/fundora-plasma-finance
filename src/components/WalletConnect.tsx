@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { DollarSign, Bitcoin, Wallet } from "lucide-react";
@@ -19,6 +18,10 @@ import * as z from "zod";
 
 type WalletType = 'metamask' | 'walletconnect' | 'coinbase' | 'brave' | '';
 
+interface WalletConnectProps {
+  onAccountCreated?: (username: string) => void;
+}
+
 // Define form schema with validation
 const formSchema = z.object({
   username: z.string().min(3, {
@@ -29,10 +32,11 @@ const formSchema = z.object({
   }),
 });
 
-const WalletConnect = () => {
+const WalletConnect = ({ onAccountCreated }: WalletConnectProps) => {
   const [connecting, setConnecting] = useState(false);
   const [selectedWallet, setSelectedWallet] = useState<WalletType>('');
   const [step, setStep] = useState<'credentials' | 'wallet'>('credentials');
+  const [username, setUsername] = useState("");
   
   // Initialize form
   const form = useForm<z.infer<typeof formSchema>>({
@@ -46,6 +50,7 @@ const WalletConnect = () => {
   const onSubmitCredentials = (data: z.infer<typeof formSchema>) => {
     // Store credentials and move to wallet connection step
     console.log("Submitted credentials:", data);
+    setUsername(data.username);
     toast({
       title: "Account details saved",
       description: `Username: ${data.username}`,
@@ -96,16 +101,15 @@ const WalletConnect = () => {
       // Simulate connection delay
       await new Promise(resolve => setTimeout(resolve, 1500));
       
-      // In a real implementation, this would connect to the actual wallet
-      // For now, we'll just show a success message
       toast({
         title: "Account Created Successfully",
         description: `Account created and connected to ${walletType}`,
       });
       
-      // Simulate account creation process
-      // In production, you would handle the wallet connection response
-      // and create an account with the connected wallet address
+      // Notify parent component about account creation
+      if (onAccountCreated && username) {
+        onAccountCreated(username);
+      }
     } catch (error) {
       toast({
         title: "Connection Failed",
