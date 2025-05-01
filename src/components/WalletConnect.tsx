@@ -1,7 +1,6 @@
-
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
-import { Bitcoin, Ethereum, Wallet } from "lucide-react";
+import { Bitcoin, DollarSign, Wallet } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 
 type WalletType = 'metamask' | 'walletconnect' | 'coinbase' | 'brave' | '';
@@ -80,7 +79,7 @@ const WalletConnect = () => {
     {
       id: 'metamask',
       name: 'MetaMask',
-      icon: <Ethereum className="h-6 w-6 text-orange-400" />,
+      icon: <DollarSign className="h-6 w-6 text-orange-400" />,
       description: 'Connect using browser extension',
       disabled: !available.includes('metamask')
     },
@@ -94,7 +93,7 @@ const WalletConnect = () => {
     {
       id: 'brave',
       name: 'Brave Wallet',
-      icon: <Ethereum className="h-6 w-6 text-orange-500" />,
+      icon: <DollarSign className="h-6 w-6 text-orange-500" />,
       description: 'Connect with Brave Browser Wallet',
       disabled: !available.includes('brave')
     },
