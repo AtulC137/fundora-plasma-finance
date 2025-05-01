@@ -1,13 +1,57 @@
+
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
-import { Bitcoin, DollarSign, Wallet } from "lucide-react";
+import { DollarSign, Bitcoin, Wallet } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
 
 type WalletType = 'metamask' | 'walletconnect' | 'coinbase' | 'brave' | '';
+
+// Define form schema with validation
+const formSchema = z.object({
+  username: z.string().min(3, {
+    message: "Username must be at least 3 characters.",
+  }),
+  password: z.string().min(8, {
+    message: "Password must be at least 8 characters.",
+  }),
+});
 
 const WalletConnect = () => {
   const [connecting, setConnecting] = useState(false);
   const [selectedWallet, setSelectedWallet] = useState<WalletType>('');
+  const [step, setStep] = useState<'credentials' | 'wallet'>('credentials');
+  
+  // Initialize form
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      username: "",
+      password: "",
+    },
+  });
+
+  const onSubmitCredentials = (data: z.infer<typeof formSchema>) => {
+    // Store credentials and move to wallet connection step
+    console.log("Submitted credentials:", data);
+    toast({
+      title: "Account details saved",
+      description: `Username: ${data.username}`,
+    });
+    setStep('wallet');
+  };
 
   const detectWallet = (): { available: WalletType[], default: WalletType } => {
     const available: WalletType[] = [];
@@ -55,8 +99,8 @@ const WalletConnect = () => {
       // In a real implementation, this would connect to the actual wallet
       // For now, we'll just show a success message
       toast({
-        title: "Wallet Connected",
-        description: `Successfully connected to ${walletType}`,
+        title: "Account Created Successfully",
+        description: `Account created and connected to ${walletType}`,
       });
       
       // Simulate account creation process
@@ -108,40 +152,78 @@ const WalletConnect = () => {
 
   return (
     <div className="py-4">
-      <div className="space-y-3">
-        {wallets.map((wallet) => (
-          <Button
-            key={wallet.id}
-            variant="outline"
-            disabled={connecting || wallet.disabled}
-            className={`w-full justify-start gap-3 py-6 glass-morphism border border-white/10 ${
-              selectedWallet === wallet.id ? 'border-fundora-cyan' : 'hover:border-fundora-blue/50'
-            }`}
-            onClick={() => connectWallet(wallet.id as WalletType)}
-          >
-            {wallet.icon}
-            <div className="flex flex-col items-start">
-              <span className="font-medium">{wallet.name}</span>
-              <span className="text-xs text-gray-400">{wallet.description}</span>
-            </div>
-            {wallet.disabled && (
-              <span className="ml-auto text-xs text-gray-500">Not detected</span>
-            )}
-            {connecting && selectedWallet === wallet.id && (
-              <span className="ml-auto">
-                <svg className="animate-spin h-5 w-5 text-fundora-blue" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-              </span>
-            )}
-          </Button>
-        ))}
-      </div>
+      {step === 'credentials' ? (
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmitCredentials)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="username"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Username (e.g. name.base.eth)</FormLabel>
+                  <FormControl>
+                    <Input placeholder="atul.base.eth" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Password</FormLabel>
+                  <FormControl>
+                    <Input type="password" placeholder="••••••••" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button type="submit" className="w-full bg-gradient-to-r from-fundora-blue to-fundora-cyan text-white">
+              Next: Connect Wallet
+            </Button>
+          </form>
+        </Form>
+      ) : (
+        <>
+          <div className="space-y-3">
+            {wallets.map((wallet) => (
+              <Button
+                key={wallet.id}
+                variant="outline"
+                disabled={connecting || wallet.disabled}
+                className={`w-full justify-start gap-3 py-6 glass-morphism border border-white/10 ${
+                  selectedWallet === wallet.id ? 'border-fundora-cyan' : 'hover:border-fundora-blue/50'
+                }`}
+                onClick={() => connectWallet(wallet.id as WalletType)}
+              >
+                {wallet.icon}
+                <div className="flex flex-col items-start">
+                  <span className="font-medium">{wallet.name}</span>
+                  <span className="text-xs text-gray-400">{wallet.description}</span>
+                </div>
+                {wallet.disabled && (
+                  <span className="ml-auto text-xs text-gray-500">Not detected</span>
+                )}
+                {connecting && selectedWallet === wallet.id && (
+                  <span className="ml-auto">
+                    <svg className="animate-spin h-5 w-5 text-fundora-blue" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                  </span>
+                )}
+              </Button>
+            ))}
+          </div>
 
-      <p className="mt-6 text-sm text-center text-gray-400">
-        By connecting a wallet, you agree to Fundora's Terms of Service and Privacy Policy
-      </p>
+          <p className="mt-6 text-sm text-center text-gray-400">
+            By connecting a wallet, you agree to Fundora's Terms of Service and Privacy Policy
+          </p>
+        </>
+      )}
     </div>
   );
 };
