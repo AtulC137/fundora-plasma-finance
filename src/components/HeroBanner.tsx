@@ -1,6 +1,15 @@
 
 import { Button } from "@/components/ui/button";
 import { DollarSign } from "lucide-react";
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogDescription, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogTrigger
+} from "@/components/ui/dialog";
+import WalletConnect from "@/components/WalletConnect";
 
 const HeroBanner = () => {
   return (
@@ -21,14 +30,27 @@ const HeroBanner = () => {
           </p>
           
           <div className="inline-block relative">
-            <Button 
-              className="bg-gradient-to-r from-fundora-blue to-fundora-cyan text-white text-lg font-semibold py-6 px-8 rounded-lg animate-pulse-glow transition-all duration-300 hover:scale-105 group"
-            >
-              <span className="flex items-center">
-                <DollarSign className="mr-2 h-6 w-6 group-hover:rotate-12 transition-transform" />
-                Get Started
-              </span>
-            </Button>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button 
+                  className="bg-gradient-to-r from-fundora-blue to-fundora-cyan text-white text-lg font-semibold py-6 px-8 rounded-lg transition-all duration-300 hover:scale-105 group"
+                >
+                  <span className="flex items-center">
+                    <DollarSign className="mr-2 h-6 w-6 group-hover:rotate-12 transition-transform" />
+                    Get Started
+                  </span>
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="glass-morphism border border-fundora-blue/30 max-w-md">
+                <DialogHeader>
+                  <DialogTitle className="text-center text-2xl font-orbitron text-gradient">Connect Your Wallet</DialogTitle>
+                  <DialogDescription className="text-center text-gray-300">
+                    Select a wallet to create your account
+                  </DialogDescription>
+                </DialogHeader>
+                <WalletConnect />
+              </DialogContent>
+            </Dialog>
             
             {/* Subtle glow effect behind button */}
             <div className="absolute -inset-1 bg-gradient-to-r from-fundora-blue/20 to-fundora-cyan/20 rounded-lg blur"></div>

@@ -1,6 +1,15 @@
 
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogDescription, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogTrigger
+} from "@/components/ui/dialog";
+import WalletConnect from '@/components/WalletConnect';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -21,21 +30,34 @@ const Header = () => {
           <div className="flex items-center space-x-3">
             <Button 
               variant="outline" 
-              className="glass-morphism transition-all duration-300 hover:bg-white/10 hover:scale-105 hover:shadow-[0_0_15px_rgba(0,123,255,0.5)]"
+              className="glass-morphism"
             >
               About Us
             </Button>
             <Button 
               variant="outline" 
-              className="glass-morphism transition-all duration-300 hover:bg-white/10 hover:scale-105 hover:shadow-[0_0_15px_rgba(124,58,237,0.5)]"
+              className="glass-morphism"
             >
               Login
             </Button>
-            <Button 
-              className="bg-gradient-to-r from-fundora-blue to-fundora-cyan text-white animate-pulse-glow transition-all duration-300 hover:scale-105"
-            >
-              Create Account
-            </Button>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button 
+                  className="bg-gradient-to-r from-fundora-blue to-fundora-cyan text-white"
+                >
+                  Create Account
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="glass-morphism border border-fundora-blue/30 max-w-md">
+                <DialogHeader>
+                  <DialogTitle className="text-center text-2xl font-orbitron text-gradient">Connect Your Wallet</DialogTitle>
+                  <DialogDescription className="text-center text-gray-300">
+                    Select a wallet to create your account
+                  </DialogDescription>
+                </DialogHeader>
+                <WalletConnect />
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
 
@@ -66,21 +88,34 @@ const Header = () => {
           <div className="flex flex-col space-y-3 px-4">
             <Button 
               variant="outline" 
-              className="glass-morphism transition-all duration-300 hover:bg-white/10"
+              className="glass-morphism"
             >
               About Us
             </Button>
             <Button 
               variant="outline" 
-              className="glass-morphism transition-all duration-300 hover:bg-white/10"
+              className="glass-morphism"
             >
               Login
             </Button>
-            <Button 
-              className="bg-gradient-to-r from-fundora-blue to-fundora-cyan text-white"
-            >
-              Create Account
-            </Button>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button 
+                  className="bg-gradient-to-r from-fundora-blue to-fundora-cyan text-white"
+                >
+                  Create Account
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="glass-morphism border border-fundora-blue/30 max-w-md">
+                <DialogHeader>
+                  <DialogTitle className="text-center text-2xl font-orbitron text-gradient">Connect Your Wallet</DialogTitle>
+                  <DialogDescription className="text-center text-gray-300">
+                    Select a wallet to create your account
+                  </DialogDescription>
+                </DialogHeader>
+                <WalletConnect />
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
       )}
