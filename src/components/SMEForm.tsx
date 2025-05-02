@@ -1,11 +1,10 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { FileUp, Calendar, Upload } from "lucide-react";
+import { FileUp, Calendar, Upload, DollarSign } from "lucide-react";
 
 // This would normally be in a separate store/context
 let globalInvoices = JSON.parse(localStorage.getItem("invoices") || "[]");
