@@ -1,5 +1,6 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { 
   Dialog, 
@@ -17,12 +18,39 @@ const Header = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [username, setUsername] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // Check if user is logged in
+  useEffect(() => {
+    const user = localStorage.getItem("user");
+    if (user) {
+      const userData = JSON.parse(user);
+      setIsLoggedIn(true);
+      setUsername(userData.email || "User");
+    }
+  }, []);
 
   // Handler for successful account creation
   const handleAccountCreated = (newUsername: string) => {
     setUsername(newUsername);
     setIsLoggedIn(true);
     setDialogOpen(false);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("user");
+    setIsLoggedIn(false);
+    setUsername("");
+    navigate("/");
+  };
+
+  const handleGetStarted = () => {
+    if (isLoggedIn) {
+      navigate("/invoice");
+    } else {
+      navigate("/login");
+    }
   };
 
   return (
@@ -32,12 +60,31 @@ const Header = () => {
           <img 
             src="/lovable-uploads/006089d8-3939-4856-b7bb-dd754b0fe3b7.png" 
             alt="Fundora Logo" 
-            className="h-16 md:h-20"
+            className="h-16 md:h-20 cursor-pointer"
+            onClick={() => navigate("/")}
           />
         </div>
 
         {/* Desktop Navigation */}
         <div className="hidden md:flex items-center space-x-3">
+          <Button 
+            variant="outline" 
+            className="glass-morphism"
+            onClick={() => navigate("/")}
+          >
+            Home
+          </Button>
+          
+          {isLoggedIn && (
+            <Button 
+              variant="outline" 
+              className="glass-morphism"
+              onClick={() => navigate("/dashboard")}
+            >
+              Dashboard
+            </Button>
+          )}
+          
           <Button 
             variant="outline" 
             className="glass-morphism"
@@ -50,6 +97,7 @@ const Header = () => {
               <Button 
                 variant="outline" 
                 className="glass-morphism"
+                onClick={() => navigate("/login")}
               >
                 Login
               </Button>
@@ -73,7 +121,7 @@ const Header = () => {
               </Dialog>
             </>
           ) : (
-            <ProfileButton username={username} />
+            <ProfileButton username={username} onLogout={handleLogout} />
           )}
         </div>
 
@@ -105,6 +153,30 @@ const Header = () => {
             <Button 
               variant="outline" 
               className="glass-morphism"
+              onClick={() => {
+                navigate("/");
+                setIsMenuOpen(false);
+              }}
+            >
+              Home
+            </Button>
+            
+            {isLoggedIn && (
+              <Button 
+                variant="outline" 
+                className="glass-morphism"
+                onClick={() => {
+                  navigate("/dashboard");
+                  setIsMenuOpen(false);
+                }}
+              >
+                Dashboard
+              </Button>
+            )}
+            
+            <Button 
+              variant="outline" 
+              className="glass-morphism"
             >
               About Us
             </Button>
@@ -114,6 +186,10 @@ const Header = () => {
                 <Button 
                   variant="outline" 
                   className="glass-morphism"
+                  onClick={() => {
+                    navigate("/login");
+                    setIsMenuOpen(false);
+                  }}
                 >
                   Login
                 </Button>
@@ -137,7 +213,16 @@ const Header = () => {
                 </Dialog>
               </>
             ) : (
-              <ProfileButton username={username} />
+              <Button 
+                variant="outline" 
+                className="glass-morphism"
+                onClick={() => {
+                  handleLogout();
+                  setIsMenuOpen(false);
+                }}
+              >
+                Logout
+              </Button>
             )}
           </div>
         </div>

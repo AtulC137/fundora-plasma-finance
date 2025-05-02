@@ -1,4 +1,5 @@
 
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -6,13 +7,25 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { User } from "lucide-react";
+import { User, LogOut, Settings, UserCircle } from "lucide-react";
 
 interface ProfileButtonProps {
   username?: string;
+  onLogout?: () => void;
 }
 
-const ProfileButton = ({ username }: ProfileButtonProps) => {
+const ProfileButton = ({ username, onLogout }: ProfileButtonProps) => {
+  const navigate = useNavigate();
+
+  const handleProfileClick = () => {
+    navigate("/dashboard");
+  };
+
+  const handleSettingsClick = () => {
+    // This would navigate to a settings page
+    console.log("Navigate to settings");
+  };
+
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -31,13 +44,28 @@ const ProfileButton = ({ username }: ProfileButtonProps) => {
       <PopoverContent className="w-60 glass-morphism border border-fundora-blue/30">
         <div className="flex flex-col space-y-2">
           <p className="text-sm font-medium text-gradient">{username || 'User'}</p>
-          <Button variant="outline" className="w-full justify-start glass-morphism">
+          <Button 
+            variant="outline" 
+            className="w-full justify-start glass-morphism"
+            onClick={handleProfileClick}
+          >
+            <UserCircle className="mr-2 h-4 w-4" />
             My Profile
           </Button>
-          <Button variant="outline" className="w-full justify-start glass-morphism">
+          <Button 
+            variant="outline" 
+            className="w-full justify-start glass-morphism"
+            onClick={handleSettingsClick}
+          >
+            <Settings className="mr-2 h-4 w-4" />
             Settings
           </Button>
-          <Button variant="outline" className="w-full justify-start glass-morphism">
+          <Button 
+            variant="outline" 
+            className="w-full justify-start glass-morphism"
+            onClick={onLogout}
+          >
+            <LogOut className="mr-2 h-4 w-4" />
             Sign Out
           </Button>
         </div>
