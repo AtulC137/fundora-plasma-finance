@@ -7,6 +7,9 @@ import { Home, FileText, User, LogOut, Menu, X } from "lucide-react";
 
 interface UserType {
   email: string;
+  username?: string;
+  name?: string;
+  profileImage?: string;
   isLoggedIn: boolean;
   [key: string]: any;
 }
@@ -28,12 +31,26 @@ const DashboardSidebar = ({ user }: DashboardSidebarProps) => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
-  // Get first letter of email for avatar fallback
-  const getInitials = (email: string) => {
-    return email.charAt(0).toUpperCase();
+  // Get first letter of username or email for avatar fallback
+  const getInitials = () => {
+    if (user.username) return user.username.charAt(0).toUpperCase();
+    if (user.name) return user.name.charAt(0).toUpperCase();
+    return user.email.charAt(0).toUpperCase();
+  };
+
+  // Get display name (username, name, or email)
+  const getDisplayName = () => {
+    if (user.username) return user.username;
+    if (user.name) return user.name;
+    return user.email;
   };
 
   const navItems = [
+    {
+      icon: Home,
+      label: "Home",
+      action: () => navigate("/")
+    },
     {
       icon: Home,
       label: "Dashboard",
@@ -60,14 +77,17 @@ const DashboardSidebar = ({ user }: DashboardSidebarProps) => {
     <>
       <div className="flex flex-col items-center py-8">
         <Avatar className="h-20 w-20 border-2 border-fundora-blue">
-          <AvatarImage src={user.avatarUrl} alt={user.email} />
-          <AvatarFallback className="text-2xl bg-fundora-blue/30">
-            {getInitials(user.email)}
-          </AvatarFallback>
+          {user.profileImage ? (
+            <AvatarImage src={user.profileImage} alt={getDisplayName()} />
+          ) : (
+            <AvatarFallback className="text-2xl bg-fundora-blue/30">
+              {getInitials()}
+            </AvatarFallback>
+          )}
         </Avatar>
         
         <div className="mt-4 text-center">
-          <p className="text-lg font-semibold text-white">{user.name || user.email}</p>
+          <p className="text-lg font-semibold text-white">{getDisplayName()}</p>
           <p className="text-sm text-gray-400">{user.email}</p>
           <div className="mt-2">
             <span className="inline-block px-3 py-1 text-xs rounded-full bg-fundora-blue/30 text-fundora-cyan">

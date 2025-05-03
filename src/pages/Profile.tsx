@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import DashboardSidebar from "@/components/DashboardSidebar";
@@ -9,13 +9,16 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
-import { User } from "lucide-react";
+import { User, Upload } from "lucide-react";
 
 const Profile = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<any>(null);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
+  const [profileImage, setProfileImage] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   // Check if user is logged in
   useEffect(() => {
@@ -26,6 +29,8 @@ const Profile = () => {
       setUser(parsedUser);
       setName(parsedUser.name || "");
       setEmail(parsedUser.email || "");
+      setUsername(parsedUser.username || "");
+      setProfileImage(parsedUser.profileImage || null);
     } else {
       navigate("/login");
     }
@@ -38,7 +43,9 @@ const Profile = () => {
     const updatedUser = {
       ...user,
       name: name,
-      email: email
+      email: email,
+      username: username,
+      profileImage: profileImage,
     };
     
     localStorage.setItem("user", JSON.stringify(updatedUser));
@@ -47,15 +54,29 @@ const Profile = () => {
     toast.success("Profile updated successfully!");
   };
 
+  const triggerFileUpload = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        if (event.target?.result) {
+          setProfileImage(event.target.result as string);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   // If not logged in, don't render anything
   if (!user) {
     return null;
   }
-
-  // Get first letter of email for avatar fallback
-  const getInitials = (email: string) => {
-    return email.charAt(0).toUpperCase();
-  };
 
   return (
     <div className="h-screen flex bg-fundora-dark">
@@ -81,12 +102,31 @@ const Profile = () => {
               <CardContent className="pt-6">
                 <div className="flex flex-col md:flex-row gap-8">
                   <div className="flex flex-col items-center">
-                    <Avatar className="h-32 w-32 border-2 border-fundora-blue">
-                      <AvatarImage src="/lovable-uploads/b5231bad-d3df-4157-b60f-9669e21ae764.png" alt={email} />
-                      <AvatarFallback className="text-4xl bg-fundora-blue/30">
-                        <User className="h-16 w-16" />
-                      </AvatarFallback>
-                    </Avatar>
+                    <div className="relative group">
+                      <Avatar className="h-32 w-32 border-2 border-fundora-blue">
+                        {profileImage ? (
+                          <AvatarImage src={profileImage} alt={username || email} />
+                        ) : (
+                          <AvatarFallback className="text-4xl bg-fundora-blue/30">
+                            <User className="h-16 w-16" />
+                          </AvatarFallback>
+                        )}
+                      </Avatar>
+                      
+                      <div 
+                        className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-full cursor-pointer"
+                        onClick={triggerFileUpload}
+                      >
+                        <Upload className="h-8 w-8 text-white" />
+                        <input 
+                          type="file" 
+                          className="hidden" 
+                          ref={fileInputRef}
+                          accept="image/*"
+                          onChange={handleFileChange}
+                        />
+                      </div>
+                    </div>
                     
                     <p className="text-white mt-4 text-center">
                       <span className="inline-block px-3 py-1 text-xs rounded-full bg-fundora-blue/30 text-fundora-cyan">
@@ -97,7 +137,18 @@ const Profile = () => {
                   
                   <div className="flex-1 space-y-6">
                     <div className="space-y-2">
-                      <Label htmlFor="name" className="text-white">Name</Label>
+                      <Label htmlFor="username" className="text-white">Username</Label>
+                      <Input 
+                        id="username"
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                        placeholder="Your username"
+                        className="bg-white/10 border-fundora-blue/30 text-white"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="name" className="text-white">Full Name</Label>
                       <Input 
                         id="name"
                         value={name}

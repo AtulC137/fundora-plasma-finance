@@ -19,6 +19,7 @@ import FloatingElements from "@/components/FloatingElements";
 import WalletConnect from "@/components/WalletConnect";
 
 const Login = () => {
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -33,7 +34,11 @@ const Login = () => {
     setTimeout(() => {
       if (email && password) {
         // Store user data in localStorage for this demo
-        localStorage.setItem("user", JSON.stringify({ email, isLoggedIn: true }));
+        localStorage.setItem("user", JSON.stringify({ 
+          email, 
+          username: username || email.split('@')[0],
+          isLoggedIn: true 
+        }));
         
         toast.success("Successfully logged in!");
         navigate("/dashboard");
@@ -46,6 +51,7 @@ const Login = () => {
 
   // Handler for successful account creation
   const handleAccountCreated = (newUsername: string) => {
+    setUsername(newUsername);
     setEmail(newUsername);
     setDialogOpen(false);
     toast.success("Account created! You can now log in.");
@@ -66,6 +72,18 @@ const Login = () => {
           
           <form onSubmit={handleLogin}>
             <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="username" className="text-white">Username</Label>
+                <Input 
+                  id="username" 
+                  type="text" 
+                  placeholder="username"
+                  className="bg-white/10 border-fundora-blue/30 text-white"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                />
+              </div>
+              
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-white">Email</Label>
                 <Input 

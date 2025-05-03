@@ -11,14 +11,15 @@ import { User, LogOut, Settings, UserCircle } from "lucide-react";
 
 interface ProfileButtonProps {
   username?: string;
+  profileImage?: string;
   onLogout?: () => void;
 }
 
-const ProfileButton = ({ username, onLogout }: ProfileButtonProps) => {
+const ProfileButton = ({ username, profileImage, onLogout }: ProfileButtonProps) => {
   const navigate = useNavigate();
 
   const handleProfileClick = () => {
-    navigate("/dashboard");
+    navigate("/profile");
   };
 
   const handleSettingsClick = () => {
@@ -26,18 +27,26 @@ const ProfileButton = ({ username, onLogout }: ProfileButtonProps) => {
     console.log("Navigate to settings");
   };
 
+  // Get first letter of username for avatar fallback
+  const getInitials = (username: string) => {
+    return username.charAt(0).toUpperCase();
+  };
+
   return (
     <Popover>
       <PopoverTrigger asChild>
         <Button variant="outline" className="rounded-full p-0 h-10 w-10 glass-morphism">
           <Avatar className="h-9 w-9">
-            <AvatarImage 
-              src="/lovable-uploads/b5231bad-d3df-4157-b60f-9669e21ae764.png" 
-              alt="Profile"
-            />
-            <AvatarFallback className="bg-yellow-400">
-              <User className="h-5 w-5" />
-            </AvatarFallback>
+            {profileImage ? (
+              <AvatarImage 
+                src={profileImage} 
+                alt="Profile"
+              />
+            ) : (
+              <AvatarFallback className="bg-yellow-400">
+                {username ? getInitials(username) : <User className="h-5 w-5" />}
+              </AvatarFallback>
+            )}
           </Avatar>
         </Button>
       </PopoverTrigger>
