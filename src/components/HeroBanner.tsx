@@ -9,8 +9,8 @@ const HeroBanner = () => {
     const user = localStorage.getItem("user");
     
     if (user) {
-      // If logged in, go to invoice page
-      navigate("/invoice");
+      // If logged in, go to dashboard
+      navigate("/dashboard");
     } else {
       // If not logged in, go to login page
       navigate("/login");

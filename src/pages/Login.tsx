@@ -5,14 +5,24 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogDescription, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogTrigger
+} from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { LogIn, UserPlus } from "lucide-react";
 import FloatingElements from "@/components/FloatingElements";
+import WalletConnect from "@/components/WalletConnect";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
   const navigate = useNavigate();
 
   const handleLogin = (e: React.FormEvent) => {
@@ -32,6 +42,13 @@ const Login = () => {
       }
       setIsLoading(false);
     }, 1000);
+  };
+
+  // Handler for successful account creation
+  const handleAccountCreated = (newUsername: string) => {
+    setEmail(newUsername);
+    setDialogOpen(false);
+    toast.success("Account created! You can now log in.");
   };
 
   return (
@@ -88,14 +105,26 @@ const Login = () => {
               
               <div className="text-center text-sm text-gray-400">
                 New user? 
-                <Button 
-                  variant="link" 
-                  className="text-fundora-blue pl-1"
-                  onClick={() => navigate("/signup")}
-                >
-                  <UserPlus className="mr-1 h-4 w-4" /> 
-                  Sign up
-                </Button>
+                <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button 
+                      variant="link" 
+                      className="text-fundora-blue pl-1"
+                    >
+                      <UserPlus className="mr-1 h-4 w-4" /> 
+                      Sign up
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="glass-morphism border border-fundora-blue/30 max-w-md">
+                    <DialogHeader>
+                      <DialogTitle className="text-center text-2xl font-orbitron text-gradient">Connect Your Wallet</DialogTitle>
+                      <DialogDescription className="text-center text-gray-300">
+                        Select a wallet to create your account
+                      </DialogDescription>
+                    </DialogHeader>
+                    <WalletConnect onAccountCreated={handleAccountCreated} />
+                  </DialogContent>
+                </Dialog>
               </div>
             </CardFooter>
           </form>

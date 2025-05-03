@@ -1,50 +1,53 @@
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
+import DashboardSidebar from "@/components/DashboardSidebar";
 import FloatingElements from "@/components/FloatingElements";
 import { FileUp, DollarSign } from "lucide-react";
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const [user, setUser] = useState(null);
   
   // Check if user is logged in
-  const user = localStorage.getItem("user");
-  const isLoggedIn = user !== null;
-
   useEffect(() => {
-    if (!isLoggedIn) {
+    const userInfo = localStorage.getItem("user");
+    
+    if (userInfo) {
+      setUser(JSON.parse(userInfo));
+    } else {
       navigate("/login");
     }
-  }, [isLoggedIn, navigate]);
+  }, [navigate]);
 
-  if (!isLoggedIn) {
+  // If not logged in, don't render anything
+  if (!user) {
     return null;
   }
 
-  const userData = JSON.parse(user || "{}");
-
   return (
-    <div className="min-h-screen bg-fundora-dark text-white overflow-hidden">
-      <FloatingElements />
+    <div className="h-screen flex bg-fundora-dark">
+      {/* Dashboard Sidebar */}
+      <DashboardSidebar user={user} />
       
-      <div className="relative z-10">
-        <Header />
+      {/* Main Content */}
+      <div className="flex-1 overflow-auto relative">
+        <FloatingElements />
         
-        <main className="container mx-auto px-4 py-12">
-          <div className="max-w-4xl mx-auto">
-            <h1 className="text-3xl md:text-4xl font-orbitron text-gradient mb-6">
+        <div className="relative z-10 p-6 md:p-10 h-full">
+          <header className="mb-10">
+            <h1 className="text-3xl md:text-4xl font-orbitron text-gradient">
               Welcome to Your Dashboard
             </h1>
-            
-            <p className="text-gray-300 mb-10">
-              Hello {userData.email}! What would you like to do today?
+            <p className="text-gray-300 mt-2">
+              What would you like to do today?
             </p>
-
+          </header>
+          
+          <main>
             <div className="grid md:grid-cols-2 gap-6">
-              <div className="glass-morphism border border-fundora-blue/30 p-6 rounded-lg hover:border-fundora-blue transition-all">
+              <div className="glass-morphism border border-fundora-blue/30 p-6 rounded-lg hover:border-fundora-blue transition-all transform hover:-translate-y-1 hover:shadow-xl">
                 <FileUp className="mb-4 text-fundora-cyan h-12 w-12" />
                 <h2 className="text-xl font-orbitron text-gradient mb-3">Mint Invoice</h2>
                 <p className="text-gray-300 mb-4">
@@ -58,7 +61,7 @@ const Dashboard = () => {
                 </Button>
               </div>
               
-              <div className="glass-morphism border border-fundora-blue/30 p-6 rounded-lg hover:border-fundora-blue transition-all">
+              <div className="glass-morphism border border-fundora-blue/30 p-6 rounded-lg hover:border-fundora-blue transition-all transform hover:-translate-y-1 hover:shadow-xl">
                 <DollarSign className="mb-4 text-fundora-cyan h-12 w-12" />
                 <h2 className="text-xl font-orbitron text-gradient mb-3">Invest in Invoices</h2>
                 <p className="text-gray-300 mb-4">
@@ -72,10 +75,8 @@ const Dashboard = () => {
                 </Button>
               </div>
             </div>
-          </div>
-        </main>
-        
-        <Footer />
+          </main>
+        </div>
       </div>
     </div>
   );
