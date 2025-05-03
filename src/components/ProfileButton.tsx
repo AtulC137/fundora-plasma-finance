@@ -7,15 +7,16 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { User, LogOut, Settings, UserCircle } from "lucide-react";
+import { User, LogOut, Settings, UserCircle, MessageCircle } from "lucide-react";
 
 interface ProfileButtonProps {
   username?: string;
   profileImage?: string;
   onLogout?: () => void;
+  onToggleChat?: () => void;
 }
 
-const ProfileButton = ({ username, profileImage, onLogout }: ProfileButtonProps) => {
+const ProfileButton = ({ username, profileImage, onLogout, onToggleChat }: ProfileButtonProps) => {
   const navigate = useNavigate();
 
   const handleProfileClick = () => {
@@ -61,6 +62,16 @@ const ProfileButton = ({ username, profileImage, onLogout }: ProfileButtonProps)
             <UserCircle className="mr-2 h-4 w-4" />
             My Profile
           </Button>
+          {onToggleChat && (
+            <Button 
+              variant="outline" 
+              className="w-full justify-start glass-morphism"
+              onClick={onToggleChat}
+            >
+              <MessageCircle className="mr-2 h-4 w-4" />
+              Messages
+            </Button>
+          )}
           <Button 
             variant="outline" 
             className="w-full justify-start glass-morphism"

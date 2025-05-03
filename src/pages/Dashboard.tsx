@@ -1,7 +1,9 @@
+
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import DashboardSidebar from "@/components/DashboardSidebar";
+import ChatSidebar from "@/components/ChatSidebar";
 import FloatingElements from "@/components/FloatingElements";
 import { FileUp, DollarSign, Search, Filter } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -291,6 +293,12 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [activeTab, setActiveTab] = useState("sme");
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  
+  // Toggle chat sidebar
+  const toggleChat = () => {
+    setIsChatOpen(!isChatOpen);
+  };
   
   // Check if user is logged in
   useEffect(() => {
@@ -311,10 +319,13 @@ const Dashboard = () => {
   return (
     <div className="h-screen flex bg-fundora-dark">
       {/* Dashboard Sidebar */}
-      <DashboardSidebar user={user} />
+      <DashboardSidebar user={user} onToggleChat={toggleChat} />
+      
+      {/* Chat Sidebar */}
+      <ChatSidebar isOpen={isChatOpen} onClose={toggleChat} user={user} />
       
       {/* Main Content */}
-      <div className="flex-1 overflow-auto relative">
+      <div className={`flex-1 overflow-auto relative transition-all ${isChatOpen ? 'md:mr-80' : ''}`}>
         <FloatingElements />
         
         <div className="relative z-10 p-6 md:p-10 h-full">

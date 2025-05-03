@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Home, FileText, User, LogOut, Menu, X } from "lucide-react";
+import { Home, FileText, User, LogOut, Menu, X, MessageCircle } from "lucide-react";
 
 interface UserType {
   email: string;
@@ -16,9 +16,10 @@ interface UserType {
 
 interface DashboardSidebarProps {
   user: UserType;
+  onToggleChat: () => void;
 }
 
-const DashboardSidebar = ({ user }: DashboardSidebarProps) => {
+const DashboardSidebar = ({ user, onToggleChat }: DashboardSidebarProps) => {
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -65,6 +66,11 @@ const DashboardSidebar = ({ user }: DashboardSidebarProps) => {
       icon: FileText,
       label: "My Invoices",
       action: () => navigate("/invoice")
+    },
+    {
+      icon: MessageCircle,
+      label: "Messages",
+      action: onToggleChat
     },
     {
       icon: LogOut,
