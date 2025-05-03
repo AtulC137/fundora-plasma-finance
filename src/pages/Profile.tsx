@@ -3,6 +3,7 @@ import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import DashboardSidebar from "@/components/DashboardSidebar";
+import ChatSidebar from "@/components/ChatSidebar";
 import FloatingElements from "@/components/FloatingElements";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
@@ -19,6 +20,12 @@ const Profile = () => {
   const [username, setUsername] = useState("");
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  
+  // Toggle chat sidebar function
+  const toggleChat = () => {
+    setIsChatOpen(!isChatOpen);
+  };
   
   // Check if user is logged in
   useEffect(() => {
@@ -81,10 +88,13 @@ const Profile = () => {
   return (
     <div className="h-screen flex bg-fundora-dark">
       {/* Dashboard Sidebar */}
-      <DashboardSidebar user={user} />
+      <DashboardSidebar user={user} onToggleChat={toggleChat} />
+      
+      {/* Chat Sidebar */}
+      <ChatSidebar isOpen={isChatOpen} onClose={toggleChat} user={user} />
       
       {/* Main Content */}
-      <div className="flex-1 overflow-auto relative">
+      <div className={`flex-1 overflow-auto relative transition-all ${isChatOpen ? 'md:mr-80' : ''}`}>
         <FloatingElements />
         
         <div className="relative z-10 p-6 md:p-10 h-full">
