@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -12,28 +11,27 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import { Label } from "@/components/ui/label";
 
 // Small Invoice Form Component
 const SmallInvoiceForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formData, setFormData] = useState({
-    title: "",
-    sender: "",
-    receiver: "",
-    amount: "",
+  
+  // Initialize the form using react-hook-form
+  const form = useForm({
+    defaultValues: {
+      title: "",
+      sender: "",
+      receiver: "",
+      amount: "",
+    }
   });
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = (values: any) => {
     setIsSubmitting(true);
 
     // Validate form
-    if (!formData.title || !formData.sender || !formData.receiver || !formData.amount) {
+    if (!values.title || !values.sender || !values.receiver || !values.amount) {
       toast.error("Please fill all required fields");
       setIsSubmitting(false);
       return;
@@ -42,7 +40,7 @@ const SmallInvoiceForm = () => {
     // Create new invoice object
     const newInvoice = {
       id: Date.now().toString(),
-      ...formData,
+      ...values,
       status: "Available",
       createdAt: new Date().toISOString(),
     };
@@ -59,7 +57,7 @@ const SmallInvoiceForm = () => {
     toast.success("Invoice created successfully!");
     
     // Reset form
-    setFormData({
+    form.reset({
       title: "",
       sender: "",
       receiver: "",
@@ -69,73 +67,96 @@ const SmallInvoiceForm = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="space-y-2">
-        <FormLabel className="text-white">Invoice Title</FormLabel>
-        <Input
-          id="title"
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+        <FormField
+          control={form.control}
           name="title"
-          placeholder="Enter invoice title"
-          className="bg-white/10 border-fundora-blue/30 text-white"
-          value={formData.title}
-          onChange={handleInputChange}
-          required
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-white">Invoice Title</FormLabel>
+              <FormControl>
+                <Input
+                  placeholder="Enter invoice title"
+                  className="bg-white/10 border-fundora-blue/30 text-white"
+                  {...field}
+                  required
+                />
+              </FormControl>
+            </FormItem>
+          )}
         />
-      </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <FormLabel className="text-white">From (Sender)</FormLabel>
-          <Input
-            id="sender"
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
             name="sender"
-            placeholder="Sender name"
-            className="bg-white/10 border-fundora-blue/30 text-white"
-            value={formData.sender}
-            onChange={handleInputChange}
-            required
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-white">From (Sender)</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="Sender name"
+                    className="bg-white/10 border-fundora-blue/30 text-white"
+                    {...field}
+                    required
+                  />
+                </FormControl>
+              </FormItem>
+            )}
           />
-        </div>
-        <div className="space-y-2">
-          <FormLabel className="text-white">To (Receiver)</FormLabel>
-          <Input
-            id="receiver"
+          
+          <FormField
+            control={form.control}
             name="receiver"
-            placeholder="Receiver name"
-            className="bg-white/10 border-fundora-blue/30 text-white"
-            value={formData.receiver}
-            onChange={handleInputChange}
-            required
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-white">To (Receiver)</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="Receiver name"
+                    className="bg-white/10 border-fundora-blue/30 text-white"
+                    {...field}
+                    required
+                  />
+                </FormControl>
+              </FormItem>
+            )}
           />
         </div>
-      </div>
 
-      <div className="space-y-2">
-        <FormLabel className="text-white">Amount (USD)</FormLabel>
-        <div className="relative">
-          <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-          <Input
-            id="amount"
-            name="amount"
-            type="number"
-            placeholder="0.00"
-            className="bg-white/10 border-fundora-blue/30 text-white pl-10"
-            value={formData.amount}
-            onChange={handleInputChange}
-            required
-          />
-        </div>
-      </div>
+        <FormField
+          control={form.control}
+          name="amount"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-white">Amount (USD)</FormLabel>
+              <FormControl>
+                <div className="relative">
+                  <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  <Input
+                    type="number"
+                    placeholder="0.00"
+                    className="bg-white/10 border-fundora-blue/30 text-white pl-10"
+                    {...field}
+                    required
+                  />
+                </div>
+              </FormControl>
+            </FormItem>
+          )}
+        />
 
-      <Button 
-        type="submit"
-        className="w-full bg-gradient-to-r from-fundora-blue to-fundora-cyan"
-        disabled={isSubmitting}
-      >
-        <FileUp className="mr-2 h-4 w-4" />
-        {isSubmitting ? "Creating..." : "Create Invoice"}
-      </Button>
-    </form>
+        <Button 
+          type="submit"
+          className="w-full bg-gradient-to-r from-fundora-blue to-fundora-cyan"
+          disabled={isSubmitting}
+        >
+          <FileUp className="mr-2 h-4 w-4" />
+          {isSubmitting ? "Creating..." : "Create Invoice"}
+        </Button>
+      </form>
+    </Form>
   );
 };
 
