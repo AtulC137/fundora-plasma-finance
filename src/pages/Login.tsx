@@ -13,6 +13,7 @@ import {
   DialogTitle, 
   DialogTrigger
 } from "@/components/ui/dialog";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { LogIn, UserPlus } from "lucide-react";
 import FloatingElements from "@/components/FloatingElements";
@@ -24,6 +25,7 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [userRole, setUserRole] = useState("sme"); // Default role
   const navigate = useNavigate();
 
   const handleLogin = (e: React.FormEvent) => {
@@ -37,7 +39,8 @@ const Login = () => {
         localStorage.setItem("user", JSON.stringify({ 
           email, 
           username: username || email.split('@')[0],
-          isLoggedIn: true 
+          isLoggedIn: true,
+          role: userRole // Store the selected role
         }));
         
         toast.success("Successfully logged in!");
@@ -54,7 +57,7 @@ const Login = () => {
     setUsername(newUsername);
     setEmail(newUsername);
     setDialogOpen(false);
-    toast.success("Account created! You can now log in.");
+    toast.success(`Account created as ${userRole === "sme" ? "an SME" : "an Investor"}! You can now log in.`);
   };
 
   return (
@@ -64,7 +67,7 @@ const Login = () => {
       <div className="container mx-auto px-4 py-20 flex justify-center items-center relative z-10">
         <Card className="w-full max-w-md glass-morphism border border-fundora-blue/30">
           <CardHeader>
-            <CardTitle className="text-2xl font-orbitron text-gradient">Login</CardTitle>
+            <CardTitle className="text-2xl font-orbitron text-gradient">Login to Fundora</CardTitle>
             <CardDescription className="text-gray-300">
               Enter your credentials to access your account
             </CardDescription>
@@ -72,6 +75,21 @@ const Login = () => {
           
           <form onSubmit={handleLogin}>
             <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label className="text-white">I am a:</Label>
+                <Tabs 
+                  defaultValue="sme" 
+                  className="w-full" 
+                  value={userRole} 
+                  onValueChange={setUserRole}
+                >
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="sme">SME</TabsTrigger>
+                    <TabsTrigger value="investor">Investor</TabsTrigger>
+                  </TabsList>
+                </Tabs>
+              </div>
+              
               <div className="space-y-2">
                 <Label htmlFor="username" className="text-white">Username</Label>
                 <Input 
@@ -135,12 +153,17 @@ const Login = () => {
                   </DialogTrigger>
                   <DialogContent className="glass-morphism border border-fundora-blue/30 max-w-md">
                     <DialogHeader>
-                      <DialogTitle className="text-center text-2xl font-orbitron text-gradient">Connect Your Wallet</DialogTitle>
+                      <DialogTitle className="text-center text-2xl font-orbitron text-gradient">
+                        Create {userRole === "sme" ? "SME" : "Investor"} Account
+                      </DialogTitle>
                       <DialogDescription className="text-center text-gray-300">
-                        Select a wallet to create your account
+                        Connect your wallet to create your {userRole === "sme" ? "Business" : "Investor"} account
                       </DialogDescription>
                     </DialogHeader>
-                    <WalletConnect onAccountCreated={handleAccountCreated} />
+                    <WalletConnect 
+                      onAccountCreated={handleAccountCreated} 
+                      userRole={userRole}
+                    />
                   </DialogContent>
                 </Dialog>
               </div>

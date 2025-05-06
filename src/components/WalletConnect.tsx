@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { DollarSign, Bitcoin, Wallet } from "lucide-react";
@@ -20,6 +21,7 @@ type WalletType = 'metamask' | 'walletconnect' | 'coinbase' | 'brave' | '';
 
 interface WalletConnectProps {
   onAccountCreated?: (username: string) => void;
+  userRole?: string;
 }
 
 // Define form schema with validation
@@ -27,12 +29,15 @@ const formSchema = z.object({
   username: z.string().min(3, {
     message: "Username must be at least 3 characters.",
   }),
+  fullName: z.string().min(3, {
+    message: "Full name must be at least 3 characters.",
+  }),
   password: z.string().min(8, {
     message: "Password must be at least 8 characters.",
   }),
 });
 
-const WalletConnect = ({ onAccountCreated }: WalletConnectProps) => {
+const WalletConnect = ({ onAccountCreated, userRole = "sme" }: WalletConnectProps) => {
   const [connecting, setConnecting] = useState(false);
   const [selectedWallet, setSelectedWallet] = useState<WalletType>('');
   const [step, setStep] = useState<'credentials' | 'wallet'>('credentials');
@@ -43,6 +48,7 @@ const WalletConnect = ({ onAccountCreated }: WalletConnectProps) => {
     resolver: zodResolver(formSchema),
     defaultValues: {
       username: "",
+      fullName: "",
       password: "",
     },
   });
@@ -103,8 +109,20 @@ const WalletConnect = ({ onAccountCreated }: WalletConnectProps) => {
       
       toast({
         title: "Account Created Successfully",
-        description: `Account created and connected to ${walletType}`,
+        description: `${userRole === "sme" ? "SME" : "Investor"} account created and connected to ${walletType}`,
       });
+      
+      // Save user data in localStorage
+      const userData = {
+        username: username,
+        isLoggedIn: true,
+        role: userRole,
+        accountType: userRole === "sme" ? "SME" : "Investor",
+        walletType: walletType,
+        fullName: form.getValues("fullName"),
+      };
+      
+      localStorage.setItem("user", JSON.stringify(userData));
       
       // Notify parent component about account creation
       if (onAccountCreated && username) {
@@ -164,9 +182,22 @@ const WalletConnect = ({ onAccountCreated }: WalletConnectProps) => {
               name="username"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Username (e.g. name.base.eth)</FormLabel>
+                  <FormLabel>Username (.base.eth)</FormLabel>
                   <FormControl>
-                    <Input placeholder="atul.base.eth" {...field} />
+                    <Input placeholder="username.base.eth" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="fullName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Full Name</FormLabel>
+                  <FormControl>
+                    <Input placeholder="John Doe" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
