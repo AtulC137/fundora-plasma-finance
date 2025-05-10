@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -61,11 +60,6 @@ const DashboardSidebar = ({ user, onToggleChat }: DashboardSidebarProps) => {
       icon: User,
       label: "Profile",
       action: () => navigate("/profile")
-    },
-    {
-      icon: FileText,
-      label: "My Invoices",
-      action: () => navigate("/invoice")
     },
     {
       icon: MessageCircle,
