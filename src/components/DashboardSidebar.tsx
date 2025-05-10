@@ -1,9 +1,8 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Home, FileText, User, LogOut, Menu, X, MessageCircle } from "lucide-react";
+import { Home, User, LogOut, Menu, X, MessageCircle } from "lucide-react";
 
 interface UserType {
   email: string;
@@ -61,11 +60,6 @@ const DashboardSidebar = ({ user, onToggleChat }: DashboardSidebarProps) => {
       icon: User,
       label: "Profile",
       action: () => navigate("/profile")
-    },
-    {
-      icon: FileText,
-      label: "My Invoices",
-      action: () => navigate("/invoice")
     },
     {
       icon: MessageCircle,
