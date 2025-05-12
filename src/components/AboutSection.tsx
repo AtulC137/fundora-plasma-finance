@@ -5,7 +5,6 @@ import { Card, CardContent } from "@/components/ui/card";
 
 interface TeamMember {
   name: string;
-  role: string;
   twitter: string;
   twitterUrl: string;
   avatar: string;
@@ -14,35 +13,30 @@ interface TeamMember {
 const teamMembers: TeamMember[] = [
   {
     name: "Atul",
-    role: "CEO & Co-Founder",
     twitter: "@Atul_Waman_",
     twitterUrl: "https://twitter.com/Atul_Waman_",
     avatar: "/lovable-uploads/9637db98-3314-44a8-bd3f-af9d026b672b.png",
   },
   {
     name: "Shubham",
-    role: "CTO",
     twitter: "@shubhkatekar",
     twitterUrl: "https://twitter.com/shubhkatekar",
     avatar: "/lovable-uploads/2941f736-4aef-4359-b124-d55c311b6c1e.png",
   },
   {
     name: "Piyush",
-    role: "Head of Finance",
     twitter: "@nerdybat369",
     twitterUrl: "https://twitter.com/nerdybat369",
     avatar: "/lovable-uploads/1c707386-dbc4-414c-a5e7-e5f36a8a4046.png",
   },
   {
     name: "Abhyudaya",
-    role: "Marketing Director",
     twitter: "@abhyudaya_t",
     twitterUrl: "https://twitter.com/abhyudaya_t",
     avatar: "/lovable-uploads/38ebf6a9-8570-4c2b-a458-c6ba96911c23.png",
   },
   {
     name: "Atharva",
-    role: "Blockchain Developer",
     twitter: "@atxharva",
     twitterUrl: "https://twitter.com/atxharva",
     avatar: "/lovable-uploads/4e12560e-a332-44ba-a6ec-451819b7be10.png",
@@ -88,8 +82,7 @@ const AboutSection = () => {
                 
                 {/* Details */}
                 <div className="text-center">
-                  <h3 className="font-orbitron text-lg font-bold mb-1 text-white">{member.name}</h3>
-                  <p className="text-fundora-silver text-sm mb-3">{member.role}</p>
+                  <h3 className="font-orbitron text-lg font-bold mb-3 text-white">{member.name}</h3>
                   
                   {/* Twitter handle */}
                   <a 
