@@ -32,6 +32,9 @@ const formSchema = z.object({
   fullName: z.string().min(3, {
     message: "Full name must be at least 3 characters.",
   }),
+  email: z.string().email({
+    message: "Please enter a valid email address.",
+  }),
   password: z.string().min(8, {
     message: "Password must be at least 8 characters.",
   }),
@@ -49,6 +52,7 @@ const WalletConnect = ({ onAccountCreated, userRole = "sme" }: WalletConnectProp
     defaultValues: {
       username: "",
       fullName: "",
+      email: "",
       password: "",
     },
   });
@@ -107,19 +111,30 @@ const WalletConnect = ({ onAccountCreated, userRole = "sme" }: WalletConnectProp
       // Simulate connection delay
       await new Promise(resolve => setTimeout(resolve, 1500));
       
+      // In a real app, we'd get the actual ETH address from the wallet connection
+      const mockEthAddress = "0x" + Math.random().toString(16).substr(2, 40);
+      
       toast({
         title: "Account Created Successfully",
         description: `${userRole === "sme" ? "SME" : "Investor"} account created and connected to ${walletType}`,
       });
       
+      // Create timestamp for created_at and updated_at
+      const timestamp = new Date().toISOString();
+      
       // Save user data in localStorage
       const userData = {
+        id: crypto.randomUUID(), // Generate UUID
         username: username,
+        email: form.getValues("email"),
+        password_hash: form.getValues("password"), // In a real app, we'd hash this
+        full_name: form.getValues("fullName"),
+        profile_image: null, // Default to null
+        account_type: userRole === "sme" ? "SME" : "Investor",
+        eth_address: mockEthAddress,
+        created_at: timestamp,
+        updated_at: timestamp,
         isLoggedIn: true,
-        role: userRole,
-        accountType: userRole === "sme" ? "SME" : "Investor",
-        walletType: walletType,
-        fullName: form.getValues("fullName"),
       };
       
       localStorage.setItem("user", JSON.stringify(userData));
@@ -185,6 +200,19 @@ const WalletConnect = ({ onAccountCreated, userRole = "sme" }: WalletConnectProp
                   <FormLabel>Username (.base.eth)</FormLabel>
                   <FormControl>
                     <Input placeholder="username.base.eth" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
+                    <Input type="email" placeholder="email@example.com" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

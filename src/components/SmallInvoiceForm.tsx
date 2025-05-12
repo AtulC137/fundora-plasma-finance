@@ -21,9 +21,7 @@ interface SmallInvoiceFormProps {
 const SmallInvoiceForm = ({ user }: SmallInvoiceFormProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
-    title: "",
-    ethName: user?.username || "",
-    realName: user?.fullName || "",
+    invoiceNumber: "",
     amount: "",
     duration: "30",
     description: "",
@@ -67,20 +65,39 @@ const SmallInvoiceForm = ({ user }: SmallInvoiceFormProps) => {
     setIsSubmitting(true);
 
     // Validate form
-    if (!formData.ethName || !formData.amount || !formData.duration) {
+    if (!formData.invoiceNumber || !formData.amount || !formData.duration) {
       toast.error("Please fill all required fields");
       setIsSubmitting(false);
       return;
     }
 
+    // Calculate due date based on duration
+    const dueDate = new Date();
+    dueDate.setDate(dueDate.getDate() + parseInt(formData.duration));
+
+    // Create timestamp for created_at and updated_at
+    const timestamp = new Date().toISOString();
+
+    // In a real app, we would upload the file to IPFS
+    // Here we'll simulate with a mock IPFS hash
+    const mockIpfsHash = "ipfs://" + Math.random().toString(36).substring(2, 15);
+
     // Create new invoice object
     const newInvoice = {
-      id: Date.now().toString(),
-      ...formData,
+      id: crypto.randomUUID(),
+      invoiceNumber: formData.invoiceNumber,
+      amount: formData.amount,
+      duration: formData.duration,
+      dueDate: dueDate.toISOString(),
+      uploadedFile: mockIpfsHash,
+      description: formData.description,
       status: "Available",
-      createdAt: new Date().toISOString(),
-      previewUrl: previewUrl,
+      created_at: timestamp,
+      updated_at: timestamp,
+      userId: user?.id, // Link to user
       fileName: formData.file?.name || "No file uploaded",
+      // These are extra fields for UI purposes
+      previewUrl: previewUrl,
     };
 
     // Get existing invoices
@@ -96,9 +113,7 @@ const SmallInvoiceForm = ({ user }: SmallInvoiceFormProps) => {
     
     // Reset form
     setFormData({
-      title: "",
-      ethName: user?.username || "",
-      realName: user?.fullName || "",
+      invoiceNumber: "",
       amount: "",
       duration: "30",
       description: "",
@@ -117,34 +132,20 @@ const SmallInvoiceForm = ({ user }: SmallInvoiceFormProps) => {
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="title" className="text-white">Invoice Title</Label>
+          <Label htmlFor="invoiceNumber" className="text-white">Invoice Number*</Label>
           <Input
-            id="title"
-            name="title"
-            placeholder="Enter invoice title"
+            id="invoiceNumber"
+            name="invoiceNumber"
+            placeholder="INV-001"
             className="bg-white/10 border-fundora-blue/30 text-white"
-            value={formData.title}
-            onChange={handleInputChange}
-          />
-        </div>
-        
-        <div className="space-y-2">
-          <Label htmlFor="ethName" className="text-white">Base.eth Username</Label>
-          <Input
-            id="ethName"
-            name="ethName"
-            placeholder="yourname.base.eth"
-            className="bg-white/10 border-fundora-blue/30 text-white"
-            value={formData.ethName}
+            value={formData.invoiceNumber}
             onChange={handleInputChange}
             required
           />
         </div>
-      </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        
         <div className="space-y-2">
-          <Label htmlFor="amount" className="text-white">Amount (USD)</Label>
+          <Label htmlFor="amount" className="text-white">Amount (USD)*</Label>
           <div className="relative">
             <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
             <Input
@@ -159,25 +160,25 @@ const SmallInvoiceForm = ({ user }: SmallInvoiceFormProps) => {
             />
           </div>
         </div>
-        
-        <div className="space-y-2">
-          <Label htmlFor="duration" className="text-white">Duration</Label>
-          <Select 
-            value={formData.duration} 
-            onValueChange={(value) => handleSelectChange('duration', value)}
-          >
-            <SelectTrigger id="duration" className="bg-white/10 border-fundora-blue/30 text-white">
-              <SelectValue placeholder="Select duration" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="7">7 days</SelectItem>
-              <SelectItem value="14">14 days</SelectItem>
-              <SelectItem value="30">30 days</SelectItem>
-              <SelectItem value="60">60 days</SelectItem>
-              <SelectItem value="90">90 days</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+      </div>
+      
+      <div className="space-y-2">
+        <Label htmlFor="duration" className="text-white">Duration*</Label>
+        <Select 
+          value={formData.duration} 
+          onValueChange={(value) => handleSelectChange('duration', value)}
+        >
+          <SelectTrigger id="duration" className="bg-white/10 border-fundora-blue/30 text-white">
+            <SelectValue placeholder="Select duration" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="7">7 days</SelectItem>
+            <SelectItem value="14">14 days</SelectItem>
+            <SelectItem value="30">30 days</SelectItem>
+            <SelectItem value="60">60 days</SelectItem>
+            <SelectItem value="90">90 days</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
       
       <div className="space-y-2">

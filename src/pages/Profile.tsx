@@ -15,10 +15,11 @@ import { User, Upload, Wallet } from "lucide-react";
 const Profile = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<any>(null);
-  const [name, setName] = useState("");
+  const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
-  const [userRole, setUserRole] = useState("sme");
+  const [ethAddress, setEthAddress] = useState("");
+  const [accountType, setAccountType] = useState("SME");
   const [walletType, setWalletType] = useState("");
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -36,12 +37,13 @@ const Profile = () => {
     if (userInfo) {
       const parsedUser = JSON.parse(userInfo);
       setUser(parsedUser);
-      setName(parsedUser.fullName || parsedUser.name || "");
+      setFullName(parsedUser.full_name || "");
       setEmail(parsedUser.email || "");
       setUsername(parsedUser.username || "");
-      setUserRole(parsedUser.role || "sme");
+      setAccountType(parsedUser.account_type || "SME");
       setWalletType(parsedUser.walletType || "");
-      setProfileImage(parsedUser.profileImage || null);
+      setEthAddress(parsedUser.eth_address || "");
+      setProfileImage(parsedUser.profile_image || null);
     } else {
       navigate("/login");
     }
@@ -53,12 +55,13 @@ const Profile = () => {
     // Update user information in localStorage
     const updatedUser = {
       ...user,
-      name: name,
-      fullName: name,
+      full_name: fullName,
       email: email,
       username: username,
-      role: userRole,
-      profileImage: profileImage,
+      eth_address: ethAddress,
+      account_type: accountType,
+      profile_image: profileImage,
+      updated_at: new Date().toISOString()
     };
     
     localStorage.setItem("user", JSON.stringify(updatedUser));
@@ -121,7 +124,7 @@ const Profile = () => {
                     <div className="relative group">
                       <Avatar className="h-32 w-32 border-2 border-fundora-blue">
                         {profileImage ? (
-                          <AvatarImage src={profileImage} alt={username || email} />
+                          <AvatarImage src={profileImage} alt={username} />
                         ) : (
                           <AvatarFallback className="text-4xl bg-fundora-blue/30">
                             <User className="h-16 w-16" />
@@ -146,12 +149,12 @@ const Profile = () => {
                     
                     <div className="mt-4 text-center space-y-2">
                       <span className="inline-block px-3 py-1 text-xs rounded-full bg-fundora-blue/30 text-fundora-cyan">
-                        {userRole === "investor" ? "Investor" : "SME"}
+                        {accountType}
                       </span>
-                      {walletType && (
+                      {ethAddress && (
                         <div className="flex items-center justify-center gap-1 text-xs text-gray-300">
                           <Wallet className="h-3 w-3" />
-                          <span>{walletType} connected</span>
+                          <span className="truncate max-w-[120px]">{ethAddress}</span>
                         </div>
                       )}
                     </div>
@@ -159,7 +162,7 @@ const Profile = () => {
                   
                   <div className="flex-1 space-y-6">
                     <div className="space-y-2">
-                      <Label htmlFor="username" className="text-white">Username (.base.eth)</Label>
+                      <Label htmlFor="username" className="text-white">Username</Label>
                       <Input 
                         id="username"
                         value={username}
@@ -170,11 +173,11 @@ const Profile = () => {
                     </div>
                     
                     <div className="space-y-2">
-                      <Label htmlFor="name" className="text-white">Full Name</Label>
+                      <Label htmlFor="fullName" className="text-white">Full Name</Label>
                       <Input 
-                        id="name"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
+                        id="fullName"
+                        value={fullName}
+                        onChange={(e) => setFullName(e.target.value)}
                         placeholder="Your name"
                         className="bg-white/10 border-fundora-blue/30 text-white"
                       />
@@ -189,6 +192,21 @@ const Profile = () => {
                         placeholder="Your email"
                         className="bg-white/10 border-fundora-blue/30 text-white"
                       />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="ethAddress" className="text-white">ETH Address</Label>
+                      <Input 
+                        id="ethAddress"
+                        value={ethAddress}
+                        onChange={(e) => setEthAddress(e.target.value)}
+                        placeholder="0x..."
+                        className="bg-white/10 border-fundora-blue/30 text-white"
+                        disabled
+                      />
+                      <p className="text-xs text-gray-400">
+                        ETH address is set when connecting your wallet
+                      </p>
                     </div>
                     
                     <Button 
@@ -209,11 +227,13 @@ const Profile = () => {
                   <div className="space-y-2">
                     <div className="flex justify-between">
                       <span className="text-gray-400">Account Type:</span>
-                      <span className="text-white font-medium">{userRole === "investor" ? "Investor" : "SME"}</span>
+                      <span className="text-white font-medium">{accountType}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-400">Member Since:</span>
-                      <span className="text-white font-medium">{new Date().toLocaleDateString()}</span>
+                      <span className="text-white font-medium">
+                        {new Date(user.created_at).toLocaleDateString()}
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-400">Wallet Connected:</span>
@@ -226,24 +246,24 @@ const Profile = () => {
               <Card className="glass-morphism border border-fundora-blue/30">
                 <CardContent className="p-6">
                   <h3 className="text-lg font-medium text-white mb-4">
-                    {userRole === "investor" ? "Investment Stats" : "Invoice Stats"}
+                    {accountType === "Investor" ? "Investment Stats" : "Invoice Stats"}
                   </h3>
                   <div className="space-y-2">
                     <div className="flex justify-between">
                       <span className="text-gray-400">
-                        {userRole === "investor" ? "Total Investments:" : "Total Invoices:"}
+                        {accountType === "Investor" ? "Total Investments:" : "Total Invoices:"}
                       </span>
                       <span className="text-white font-medium">0</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-400">
-                        {userRole === "investor" ? "Active Investments:" : "Active Invoices:"}
+                        {accountType === "Investor" ? "Active Investments:" : "Active Invoices:"}
                       </span>
                       <span className="text-white font-medium">0</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-400">
-                        {userRole === "investor" ? "Completed Investments:" : "Completed Invoices:"}
+                        {accountType === "Investor" ? "Completed Investments:" : "Completed Invoices:"}
                       </span>
                       <span className="text-white font-medium">0</span>
                     </div>

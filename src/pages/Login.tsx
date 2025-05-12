@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,25 +28,49 @@ const Login = () => {
   const [userRole, setUserRole] = useState("sme"); // Default role
   const navigate = useNavigate();
 
+  // Check if user is already logged in
+  useEffect(() => {
+    const userData = localStorage.getItem("user");
+    if (userData) {
+      const user = JSON.parse(userData);
+      if (user.isLoggedIn) {
+        navigate("/dashboard");
+      }
+    }
+  }, [navigate]);
+
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
-    // This is a mock login - in a real app, this would authenticate with a backend
+    // In a real app, this would authenticate with a backend
     setTimeout(() => {
-      if (email && password) {
-        // Store user data in localStorage for this demo
-        localStorage.setItem("user", JSON.stringify({ 
-          email, 
-          username: username || email.split('@')[0],
-          isLoggedIn: true,
-          role: userRole // Store the selected role
-        }));
+      // Get all users from localStorage (in a real app, this would be a database query)
+      const users = JSON.parse(localStorage.getItem("users") || "[]");
+      
+      // If user created an account via WalletConnect, it might be stored directly as "user"
+      const singleUser = JSON.parse(localStorage.getItem("user") || "null");
+      
+      // Check if the email and password match
+      const matchedUser = users.find((user: any) => 
+        (user.email === email || user.username === username) && 
+        user.password_hash === password
+      ) || (singleUser && 
+        ((singleUser.email === email || singleUser.username === username) && 
+        singleUser.password_hash === password) ? 
+        singleUser : null);
+      
+      if (matchedUser) {
+        // Update user object with isLoggedIn flag
+        matchedUser.isLoggedIn = true;
+        
+        // Save updated user data
+        localStorage.setItem("user", JSON.stringify(matchedUser));
         
         toast.success("Successfully logged in!");
         navigate("/dashboard");
       } else {
-        toast.error("Please enter your email and password");
+        toast.error("Invalid email/username or password");
       }
       setIsLoading(false);
     }, 1000);
@@ -55,7 +79,6 @@ const Login = () => {
   // Handler for successful account creation
   const handleAccountCreated = (newUsername: string) => {
     setUsername(newUsername);
-    setEmail(newUsername);
     setDialogOpen(false);
     toast.success(`Account created as ${userRole === "sme" ? "an SME" : "an Investor"}! You can now log in.`);
   };
@@ -91,27 +114,14 @@ const Login = () => {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="username" className="text-white">Username</Label>
+                <Label htmlFor="username" className="text-white">Username or Email</Label>
                 <Input 
                   id="username" 
                   type="text" 
-                  placeholder="username"
+                  placeholder="username or email"
                   className="bg-white/10 border-fundora-blue/30 text-white"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="email" className="text-white">Email</Label>
-                <Input 
-                  id="email" 
-                  type="email" 
-                  placeholder="email@example.com"
-                  className="bg-white/10 border-fundora-blue/30 text-white"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
                 />
               </div>
               
