@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -213,7 +212,7 @@ const Dashboard = () => {
             </div>
             <Button 
               onClick={switchAccountType} 
-              className="glass-morphism border border-fundora-blue/30"
+              className="glass-morphism border border-fundora-blue/30 text-white font-semibold hover:bg-fundora-blue/30"
             >
               Switch to {user.account_type === "SME" ? "Investor" : "SME"} View
             </Button>
