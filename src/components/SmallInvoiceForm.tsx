@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -22,13 +22,41 @@ interface SmallInvoiceFormProps {
 const SmallInvoiceForm = ({ user }: SmallInvoiceFormProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
-    invoiceNumber: "",
     amount: "",
     duration: "30",
     description: "",
     file: null as File | null,
   });
   const [previewUrl, setPreviewUrl] = useState("");
+  const [invoiceNumber, setInvoiceNumber] = useState("");
+
+  // Generate automatic invoice number on component mount
+  useEffect(() => {
+    generateInvoiceNumber();
+  }, []);
+
+  const generateInvoiceNumber = () => {
+    // Get existing invoices to determine the next invoice number
+    const existingInvoices = JSON.parse(localStorage.getItem(DB_KEYS.INVOICES) || "[]");
+    const prefix = "INV";
+    let nextNumber = 1001; // Starting with 1001 for 4-digit format
+    
+    if (existingInvoices.length > 0) {
+      // Find the highest invoice number
+      const highestInvoiceNumber = existingInvoices
+        .map((inv: Invoice) => {
+          // Extract the number part from the invoice number
+          const match = inv.invoiceNumber.match(/\d+/);
+          return match ? parseInt(match[0]) : 0;
+        })
+        .reduce((max: number, current: number) => Math.max(max, current), 0);
+      
+      nextNumber = highestInvoiceNumber + 1;
+    }
+    
+    const newInvoiceNumber = `${prefix}-${nextNumber}`;
+    setInvoiceNumber(newInvoiceNumber);
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -66,7 +94,7 @@ const SmallInvoiceForm = ({ user }: SmallInvoiceFormProps) => {
     setIsSubmitting(true);
 
     // Validate form
-    if (!formData.invoiceNumber || !formData.amount || !formData.duration) {
+    if (!formData.amount || !formData.duration) {
       toast.error("Please fill all required fields");
       setIsSubmitting(false);
       return;
@@ -86,7 +114,7 @@ const SmallInvoiceForm = ({ user }: SmallInvoiceFormProps) => {
     // Create new invoice object
     const newInvoice: Invoice = {
       id: crypto.randomUUID(),
-      invoiceNumber: formData.invoiceNumber,
+      invoiceNumber: invoiceNumber,
       amount: formData.amount,
       duration: formData.duration,
       dueDate: dueDate.toISOString(),
@@ -113,7 +141,6 @@ const SmallInvoiceForm = ({ user }: SmallInvoiceFormProps) => {
     
     // Reset form
     setFormData({
-      invoiceNumber: "",
       amount: "",
       duration: "30",
       description: "",
@@ -121,21 +148,21 @@ const SmallInvoiceForm = ({ user }: SmallInvoiceFormProps) => {
     });
     setPreviewUrl("");
     setIsSubmitting(false);
+    
+    // Generate a new invoice number for the next invoice
+    generateInvoiceNumber();
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="invoiceNumber" className="text-white">Invoice Number*</Label>
+          <Label htmlFor="invoiceNumber" className="text-white">Invoice Number (Auto-generated)</Label>
           <Input
             id="invoiceNumber"
-            name="invoiceNumber"
-            placeholder="INV-001"
+            value={invoiceNumber}
             className="bg-white/10 border-fundora-blue/30 text-white"
-            value={formData.invoiceNumber}
-            onChange={handleInputChange}
-            required
+            disabled
           />
         </div>
         
