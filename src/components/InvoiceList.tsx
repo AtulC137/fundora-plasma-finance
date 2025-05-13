@@ -4,53 +4,81 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { FileUp, Search, Filter, DollarSign } from "lucide-react";
+import { FileUp, Search, Filter, DollarSign, Eye } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
+import { DB_KEYS, Invoice, Investment } from "@/types/database";
+import { format } from "date-fns";
 
 interface InvoiceListProps {
   userRole: "sme" | "investor";
   username?: string;
+  userId?: string;
   portfolioOnly?: boolean;
 }
 
-const InvoiceList = ({ userRole, username, portfolioOnly = false }: InvoiceListProps) => {
-  const [invoices, setInvoices] = useState<any[]>([]);
-  const [filteredInvoices, setFilteredInvoices] = useState<any[]>([]);
+const InvoiceList = ({ userRole, username, userId, portfolioOnly = false }: InvoiceListProps) => {
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [filteredInvoices, setFilteredInvoices] = useState<Invoice[]>([]);
+  const [investments, setInvestments] = useState<Investment[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [amountFilter, setAmountFilter] = useState("all");
 
+  // Load invoices and investments from localStorage
   useEffect(() => {
-    // Load invoices from localStorage
-    const storedInvoices = localStorage.getItem("invoices");
+    const storedInvoices = localStorage.getItem(DB_KEYS.INVOICES);
+    const storedInvestments = localStorage.getItem(DB_KEYS.INVESTMENTS);
+    
+    let parsedInvoices: Invoice[] = [];
+    let parsedInvestments: Investment[] = [];
+    
     if (storedInvoices) {
-      const parsedInvoices = JSON.parse(storedInvoices);
-      
-      // Filter based on user role and requirements
-      let filtered = parsedInvoices;
-      
-      if (userRole === "sme" && username) {
-        // Show only this SME's invoices
-        filtered = parsedInvoices.filter((invoice: any) => 
-          invoice.ethName === username
-        );
-      } else if (userRole === "investor" && portfolioOnly && username) {
-        // Show only invoices the investor has invested in
-        filtered = parsedInvoices.filter((invoice: any) => 
-          invoice.investor === username
-        );
-      } else if (userRole === "investor" && !portfolioOnly) {
-        // Show available invoices for investment
-        filtered = parsedInvoices.filter((invoice: any) => 
-          invoice.status === "Available"
-        );
-      }
-      
-      setInvoices(filtered);
-      setFilteredInvoices(filtered);
+      parsedInvoices = JSON.parse(storedInvoices);
     }
-  }, [userRole, username, portfolioOnly]);
+    
+    if (storedInvestments) {
+      parsedInvestments = JSON.parse(storedInvestments);
+    }
+    
+    setInvestments(parsedInvestments);
+    
+    // Filter based on user role and requirements
+    let filtered = parsedInvoices;
+    
+    if (userRole === "sme" && userId) {
+      if (portfolioOnly) {
+        // For SMEs, show only invoices that have investments
+        const investedInvoiceIds = parsedInvestments
+          .filter(inv => parsedInvoices.some(i => i.userId === userId && i.id === inv.invoice_id))
+          .map(inv => inv.invoice_id);
+          
+        filtered = parsedInvoices.filter(inv => 
+          inv.userId === userId && investedInvoiceIds.includes(inv.id)
+        );
+      } else {
+        // Show all invoices created by this SME
+        filtered = parsedInvoices.filter(inv => inv.userId === userId);
+      }
+    } else if (userRole === "investor") {
+      if (portfolioOnly && userId) {
+        // Show only invoices the investor has invested in
+        const investedInvoiceIds = parsedInvestments
+          .filter(inv => inv.investor_id === userId)
+          .map(inv => inv.invoice_id);
+          
+        filtered = parsedInvoices.filter(inv => 
+          investedInvoiceIds.includes(inv.id)
+        );
+      } else {
+        // Show available invoices for investment
+        filtered = parsedInvoices.filter(inv => inv.status === "Available");
+      }
+    }
+    
+    setInvoices(filtered);
+    setFilteredInvoices(filtered);
+  }, [userRole, username, userId, portfolioOnly]);
 
   // Apply filters whenever search term or filters change
   useEffect(() => {
@@ -60,9 +88,8 @@ const InvoiceList = ({ userRole, username, portfolioOnly = false }: InvoiceListP
     if (searchTerm) {
       result = result.filter(
         invoice => 
-          (invoice.title && invoice.title.toLowerCase().includes(searchTerm.toLowerCase())) ||
-          (invoice.ethName && invoice.ethName.toLowerCase().includes(searchTerm.toLowerCase())) ||
-          (invoice.realName && invoice.realName.toLowerCase().includes(searchTerm.toLowerCase()))
+          (invoice.invoiceNumber && invoice.invoiceNumber.toLowerCase().includes(searchTerm.toLowerCase())) ||
+          (invoice.description && invoice.description.toLowerCase().includes(searchTerm.toLowerCase()))
       );
     }
     
@@ -96,28 +123,77 @@ const InvoiceList = ({ userRole, username, portfolioOnly = false }: InvoiceListP
     }).format(parseFloat(amount) || 0);
   };
 
-  const handleViewDetails = (invoice: any) => {
-    // For now, just show a toast with invoice details
-    toast.info(`Viewing invoice: ${invoice.title || 'Untitled'}`);
+  const formatDate = (dateString: string) => {
+    try {
+      return format(new Date(dateString), 'MMM dd, yyyy');
+    } catch (e) {
+      return 'Invalid date';
+    }
   };
 
-  const handleInvest = (invoice: any) => {
-    // Update the invoice's status and investor
-    const updatedInvoices = invoices.map(inv => {
+  const handleViewDetails = (invoice: Invoice) => {
+    // Show investment details if it's an investor viewing their portfolio
+    if (userRole === "investor" && portfolioOnly && userId) {
+      const investment = investments.find(
+        inv => inv.invoice_id === invoice.id && inv.investor_id === userId
+      );
+      
+      if (investment) {
+        toast.info(`Investment of ${formatCurrency(investment.amount)} made on ${format(new Date(investment.created_at), 'MMM dd, yyyy')}`);
+      }
+    } else {
+      toast.info(`Viewing invoice: ${invoice.invoiceNumber}`);
+    }
+  };
+
+  const handleInvest = (invoice: Invoice) => {
+    if (!userId) {
+      toast.error("Please log in to invest");
+      return;
+    }
+    
+    // Create new investment
+    const newInvestment: Investment = {
+      id: crypto.randomUUID(),
+      invoice_id: invoice.id,
+      investor_id: userId,
+      amount: invoice.amount,
+      status: 'Confirmed',
+      transaction_hash: "0x" + Math.random().toString(36).substring(2, 15),
+      return_amount: (parseFloat(invoice.amount) * 1.1).toFixed(2), // 10% return
+      return_date: new Date(
+        new Date().getTime() + parseInt(invoice.duration) * 24 * 60 * 60 * 1000
+      ).toISOString(),
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+    
+    // Update the invoice's status
+    const updatedInvoices = JSON.parse(localStorage.getItem(DB_KEYS.INVOICES) || "[]").map((inv: Invoice) => {
       if (inv.id === invoice.id) {
         return {
           ...inv,
           status: "Funded",
-          investor: username,
-          investedAt: new Date().toISOString()
+          investor_id: userId
         };
       }
       return inv;
     });
     
-    // Update state and localStorage
-    setInvoices(updatedInvoices);
-    localStorage.setItem("invoices", JSON.stringify(updatedInvoices));
+    // Get existing investments
+    const existingInvestments = JSON.parse(localStorage.getItem(DB_KEYS.INVESTMENTS) || "[]");
+    
+    // Add new investment
+    existingInvestments.push(newInvestment);
+    
+    // Save to localStorage
+    localStorage.setItem(DB_KEYS.INVOICES, JSON.stringify(updatedInvoices));
+    localStorage.setItem(DB_KEYS.INVESTMENTS, JSON.stringify(existingInvestments));
+    
+    // Refresh invoice list
+    setInvoices(updatedInvoices.filter((inv: Invoice) => 
+      userRole === "sme" ? inv.userId === userId : inv.status === "Available"
+    ));
     
     toast.success("Investment successful!");
   };
@@ -190,7 +266,7 @@ const InvoiceList = ({ userRole, username, portfolioOnly = false }: InvoiceListP
               <CardContent className="p-4 flex flex-col md:flex-row justify-between items-start md:items-center">
                 <div className="space-y-1 flex-1">
                   <div className="flex items-center gap-2">
-                    <h3 className="font-medium text-white">{invoice.title || `Invoice #${invoice.id.substring(0, 6)}`}</h3>
+                    <h3 className="font-medium text-white">Invoice #{invoice.invoiceNumber}</h3>
                     <Badge className={
                       invoice.status === "Available" ? "bg-green-500/70" :
                       invoice.status === "Funded" ? "bg-blue-500/70" :
@@ -199,11 +275,11 @@ const InvoiceList = ({ userRole, username, portfolioOnly = false }: InvoiceListP
                       {invoice.status}
                     </Badge>
                   </div>
-                  <p className="text-sm text-gray-400">
-                    Creator: {invoice.ethName || "Unknown"}
-                  </p>
+                  {invoice.description && (
+                    <p className="text-sm text-gray-400 line-clamp-1">{invoice.description}</p>
+                  )}
                   <p className="text-xs text-gray-400">
-                    Duration: {invoice.duration || "30"} days
+                    Due date: {formatDate(invoice.dueDate)}
                   </p>
                 </div>
                 <div className="mt-2 md:mt-0 flex flex-col md:items-end">
@@ -218,6 +294,7 @@ const InvoiceList = ({ userRole, username, portfolioOnly = false }: InvoiceListP
                       className="text-xs glass-morphism"
                       onClick={() => handleViewDetails(invoice)}
                     >
+                      <Eye className="h-3 w-3 mr-1" />
                       View Details
                     </Button>
                     

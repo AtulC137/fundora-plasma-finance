@@ -13,9 +13,10 @@ import {
   SelectValue 
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { Invoice, User, DB_KEYS } from "@/types/database";
 
 interface SmallInvoiceFormProps {
-  user: any;
+  user: User;
 }
 
 const SmallInvoiceForm = ({ user }: SmallInvoiceFormProps) => {
@@ -83,7 +84,7 @@ const SmallInvoiceForm = ({ user }: SmallInvoiceFormProps) => {
     const mockIpfsHash = "ipfs://" + Math.random().toString(36).substring(2, 15);
 
     // Create new invoice object
-    const newInvoice = {
+    const newInvoice: Invoice = {
       id: crypto.randomUUID(),
       invoiceNumber: formData.invoiceNumber,
       amount: formData.amount,
@@ -94,20 +95,19 @@ const SmallInvoiceForm = ({ user }: SmallInvoiceFormProps) => {
       status: "Available",
       created_at: timestamp,
       updated_at: timestamp,
-      userId: user?.id, // Link to user
+      userId: user.id, // Link to user
       fileName: formData.file?.name || "No file uploaded",
-      // These are extra fields for UI purposes
       previewUrl: previewUrl,
     };
 
     // Get existing invoices
-    const existingInvoices = JSON.parse(localStorage.getItem("invoices") || "[]");
+    const existingInvoices = JSON.parse(localStorage.getItem(DB_KEYS.INVOICES) || "[]");
     
     // Add new invoice
     existingInvoices.push(newInvoice);
     
     // Save to localStorage
-    localStorage.setItem("invoices", JSON.stringify(existingInvoices));
+    localStorage.setItem(DB_KEYS.INVOICES, JSON.stringify(existingInvoices));
     
     toast.success("Invoice created successfully!");
     

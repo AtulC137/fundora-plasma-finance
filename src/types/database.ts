@@ -34,6 +34,7 @@ export interface Invoice {
   // Additional fields for UI purposes
   fileName?: string;
   previewUrl?: string;
+  investor_id?: string; // ID of investor who funded this invoice
 }
 
 // Investment type
@@ -48,6 +49,10 @@ export interface Investment {
   return_date: string;
   created_at: string;
   updated_at: string;
+  
+  // For UI joining
+  invoice?: Invoice;
+  investor?: User;
 }
 
 // Transaction type
