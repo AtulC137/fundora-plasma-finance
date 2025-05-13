@@ -1,17 +1,10 @@
+
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Home, FileText, User, LogOut, Menu, X, MessageCircle } from "lucide-react";
-
-interface UserType {
-  email: string;
-  username?: string;
-  name?: string;
-  profileImage?: string;
-  isLoggedIn: boolean;
-  [key: string]: any;
-}
+import { User as UserType } from "@/types/database";
 
 interface DashboardSidebarProps {
   user: UserType;
@@ -34,14 +27,14 @@ const DashboardSidebar = ({ user, onToggleChat }: DashboardSidebarProps) => {
   // Get first letter of username or email for avatar fallback
   const getInitials = () => {
     if (user.username) return user.username.charAt(0).toUpperCase();
-    if (user.name) return user.name.charAt(0).toUpperCase();
+    if (user.full_name) return user.full_name.charAt(0).toUpperCase();
     return user.email.charAt(0).toUpperCase();
   };
 
   // Get display name (username, name, or email)
   const getDisplayName = () => {
     if (user.username) return user.username;
-    if (user.name) return user.name;
+    if (user.full_name) return user.full_name;
     return user.email;
   };
 
@@ -77,8 +70,8 @@ const DashboardSidebar = ({ user, onToggleChat }: DashboardSidebarProps) => {
     <>
       <div className="flex flex-col items-center py-8">
         <Avatar className="h-20 w-20 border-2 border-fundora-blue">
-          {user.profileImage ? (
-            <AvatarImage src={user.profileImage} alt={getDisplayName()} />
+          {user.profile_image ? (
+            <AvatarImage src={user.profile_image} alt={getDisplayName()} />
           ) : (
             <AvatarFallback className="text-2xl bg-fundora-blue/30">
               {getInitials()}
@@ -91,7 +84,7 @@ const DashboardSidebar = ({ user, onToggleChat }: DashboardSidebarProps) => {
           <p className="text-sm text-gray-400">{user.email}</p>
           <div className="mt-2">
             <span className="inline-block px-3 py-1 text-xs rounded-full bg-fundora-blue/30 text-fundora-cyan">
-              {user.accountType || "User"}
+              {user.account_type}
             </span>
           </div>
         </div>
