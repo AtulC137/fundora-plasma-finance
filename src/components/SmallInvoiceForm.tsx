@@ -125,11 +125,6 @@ const SmallInvoiceForm = ({ user }: SmallInvoiceFormProps) => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="text-center mb-6">
-        <h2 className="text-xl font-semibold text-fundora-cyan">Quick Invoice Creation</h2>
-        <p className="text-gray-300 text-sm">Create a new invoice for investors to fund</p>
-      </div>
-      
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="invoiceNumber" className="text-white">Invoice Number*</Label>

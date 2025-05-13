@@ -18,13 +18,14 @@ import SmallInvoiceForm from "@/components/SmallInvoiceForm";
 import InvoiceList from "@/components/InvoiceList";
 import InvestmentsList from "@/components/InvestmentsList";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { DB_KEYS } from "@/types/database";
+import { DB_KEYS, User as UserType } from "@/types/database";
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<UserType | null>(null);
   const [activeTab, setActiveTab] = useState("create");
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false);
   
   // Toggle chat sidebar
   const toggleChat = () => {
@@ -36,21 +37,121 @@ const Dashboard = () => {
     const userInfo = localStorage.getItem(DB_KEYS.USER);
     
     if (userInfo) {
-      const parsedUser = JSON.parse(userInfo);
-      setUser(parsedUser);
-      // Set default active tab based on user account type
-      if (parsedUser.account_type === "Investor") {
-        setActiveTab("invest");
+      try {
+        const parsedUser = JSON.parse(userInfo);
+        setUser(parsedUser);
+        // Set default active tab based on user account type
+        if (parsedUser.account_type === "Investor") {
+          setActiveTab("invest");
+        } else {
+          setActiveTab("create");
+        }
+        
+        // If no users exist yet, create some sample users
+        initializeUsers(parsedUser);
+        
+      } catch (error) {
+        console.error("Error parsing user:", error);
+        toast.error("Error loading user data");
       }
     } else {
-      navigate("/login");
+      // Create a default user if none exists
+      createDefaultUser();
     }
+    setIsLoaded(true);
   }, [navigate]);
 
-  // If not logged in, don't render anything
-  if (!user) {
-    return null;
+  // Create default user if needed
+  const createDefaultUser = () => {
+    const defaultUser: UserType = {
+      id: crypto.randomUUID(),
+      username: "demo_sme",
+      email: "sme@fundora.com",
+      password_hash: "hashed_password",
+      full_name: "Demo SME User",
+      profile_image: null,
+      account_type: "SME",
+      eth_address: "0x1234567890abcdef",
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      isLoggedIn: true
+    };
+    
+    localStorage.setItem(DB_KEYS.USER, JSON.stringify(defaultUser));
+    
+    // Initialize users array if it doesn't exist
+    const existingUsers = localStorage.getItem(DB_KEYS.USERS);
+    if (!existingUsers) {
+      localStorage.setItem(DB_KEYS.USERS, JSON.stringify([defaultUser]));
+    }
+    
+    setUser(defaultUser);
+  };
+  
+  // Initialize sample users if needed
+  const initializeUsers = (currentUser: UserType) => {
+    const existingUsers = localStorage.getItem(DB_KEYS.USERS);
+    if (!existingUsers || JSON.parse(existingUsers).length === 0) {
+      // Create sample SME and Investor users
+      const smeUser: UserType = {
+        id: currentUser.id,
+        username: currentUser.username,
+        email: currentUser.email,
+        password_hash: currentUser.password_hash,
+        full_name: currentUser.full_name,
+        profile_image: currentUser.profile_image,
+        account_type: "SME",
+        eth_address: currentUser.eth_address,
+        created_at: currentUser.created_at,
+        updated_at: currentUser.updated_at
+      };
+      
+      const investorUser: UserType = {
+        id: crypto.randomUUID(),
+        username: "demo_investor",
+        email: "investor@fundora.com",
+        password_hash: "hashed_password",
+        full_name: "Demo Investor",
+        profile_image: null,
+        account_type: "Investor",
+        eth_address: "0xabcdef1234567890",
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+      
+      localStorage.setItem(DB_KEYS.USERS, JSON.stringify([smeUser, investorUser]));
+    }
+  };
+
+  // If loading, show loading state
+  if (!isLoaded) {
+    return (
+      <div className="h-screen flex items-center justify-center bg-fundora-dark">
+        <p className="text-white text-xl">Loading dashboard...</p>
+      </div>
+    );
   }
+
+  // If not logged in, create a default user
+  if (!user) {
+    return (
+      <div className="h-screen flex items-center justify-center bg-fundora-dark">
+        <p className="text-white text-xl">Creating default user...</p>
+      </div>
+    );
+  }
+
+  // Switch account type
+  const switchAccountType = () => {
+    if (user) {
+      const newAccountType = user.account_type === "SME" ? "Investor" : "SME";
+      const updatedUser = { ...user, account_type: newAccountType };
+      localStorage.setItem(DB_KEYS.USER, JSON.stringify(updatedUser));
+      setUser(updatedUser);
+      setActiveTab(newAccountType === "SME" ? "create" : "invest");
+      toast.success(`Switched to ${newAccountType} account`);
+    }
+  };
 
   // Get number of invoices
   const invoices = JSON.parse(localStorage.getItem(DB_KEYS.INVOICES) || "[]");
@@ -99,15 +200,23 @@ const Dashboard = () => {
         <FloatingElements />
         
         <div className="relative z-10 p-6 md:p-10 h-full">
-          <header className="mb-8">
-            <h1 className="text-3xl md:text-4xl font-orbitron text-gradient">
-              {user.account_type === "SME" ? "SME Dashboard" : "Investor Dashboard"}
-            </h1>
-            <p className="text-gray-300 mt-2">
-              {user.account_type === "SME" 
-                ? "Create and manage your invoices for funding" 
-                : "Browse and invest in available invoices"}
-            </p>
+          <header className="mb-8 flex justify-between items-center">
+            <div>
+              <h1 className="text-3xl md:text-4xl font-orbitron text-gradient">
+                {user.account_type === "SME" ? "SME Dashboard" : "Investor Dashboard"}
+              </h1>
+              <p className="text-gray-300 mt-2">
+                {user.account_type === "SME" 
+                  ? "Create and manage your invoices for funding" 
+                  : "Browse and invest in available invoices"}
+              </p>
+            </div>
+            <Button 
+              onClick={switchAccountType} 
+              className="glass-morphism border border-fundora-blue/30"
+            >
+              Switch to {user.account_type === "SME" ? "Investor" : "SME"} View
+            </Button>
           </header>
           
           {/* Summary Stats */}
@@ -218,6 +327,12 @@ const Dashboard = () => {
                 <>
                   <TabsContent value="create" className="mt-0">
                     <Card className="glass-morphism border border-fundora-blue/30">
+                      <CardHeader>
+                        <CardTitle className="text-xl font-orbitron text-gradient">Create New Invoice</CardTitle>
+                        <CardDescription className="text-gray-300">
+                          Fill in the details below to create a new invoice for funding
+                        </CardDescription>
+                      </CardHeader>
                       <CardContent className="pt-6">
                         <SmallInvoiceForm user={user} />
                       </CardContent>
@@ -226,6 +341,12 @@ const Dashboard = () => {
 
                   <TabsContent value="manage" className="mt-0">
                     <Card className="glass-morphism border border-fundora-blue/30">
+                      <CardHeader>
+                        <CardTitle className="text-xl font-orbitron text-gradient">My Invoices</CardTitle>
+                        <CardDescription className="text-gray-300">
+                          Manage your existing invoices
+                        </CardDescription>
+                      </CardHeader>
                       <CardContent className="pt-6">
                         <InvoiceList userRole="sme" userId={user.id} />
                       </CardContent>
@@ -234,6 +355,12 @@ const Dashboard = () => {
                   
                   <TabsContent value="investments" className="mt-0">
                     <Card className="glass-morphism border border-fundora-blue/30">
+                      <CardHeader>
+                        <CardTitle className="text-xl font-orbitron text-gradient">Investments in My Invoices</CardTitle>
+                        <CardDescription className="text-gray-300">
+                          See who has invested in your invoices
+                        </CardDescription>
+                      </CardHeader>
                       <CardContent className="pt-6">
                         <InvestmentsList userId={user.id} userRole="sme" />
                       </CardContent>
@@ -247,6 +374,12 @@ const Dashboard = () => {
                 <>
                   <TabsContent value="invest" className="mt-0">
                     <Card className="glass-morphism border border-fundora-blue/30">
+                      <CardHeader>
+                        <CardTitle className="text-xl font-orbitron text-gradient">Available Invoices</CardTitle>
+                        <CardDescription className="text-gray-300">
+                          Browse and invest in available invoices
+                        </CardDescription>
+                      </CardHeader>
                       <CardContent className="pt-6">
                         <InvoiceList userRole="investor" userId={user.id} />
                       </CardContent>
@@ -255,6 +388,12 @@ const Dashboard = () => {
 
                   <TabsContent value="portfolio" className="mt-0">
                     <Card className="glass-morphism border border-fundora-blue/30">
+                      <CardHeader>
+                        <CardTitle className="text-xl font-orbitron text-gradient">My Investment Portfolio</CardTitle>
+                        <CardDescription className="text-gray-300">
+                          Track the performance of your investments
+                        </CardDescription>
+                      </CardHeader>
                       <CardContent className="pt-6">
                         <InvoiceList userRole="investor" userId={user.id} portfolioOnly={true} />
                       </CardContent>
@@ -263,6 +402,12 @@ const Dashboard = () => {
                   
                   <TabsContent value="investments" className="mt-0">
                     <Card className="glass-morphism border border-fundora-blue/30">
+                      <CardHeader>
+                        <CardTitle className="text-xl font-orbitron text-gradient">Investment Details</CardTitle>
+                        <CardDescription className="text-gray-300">
+                          Detailed view of all your investments
+                        </CardDescription>
+                      </CardHeader>
                       <CardContent className="pt-6">
                         <InvestmentsList userId={user.id} userRole="investor" />
                       </CardContent>
