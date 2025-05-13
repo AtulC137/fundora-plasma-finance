@@ -18,11 +18,11 @@ import SmallInvoiceForm from "@/components/SmallInvoiceForm";
 import InvoiceList from "@/components/InvoiceList";
 import InvestmentsList from "@/components/InvestmentsList";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { DB_KEYS, User } from "@/types/database";
+import { DB_KEYS, User as UserData } from "@/types/database";
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<UserData | null>(null);
   const [activeTab, setActiveTab] = useState("create");
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
@@ -38,7 +38,7 @@ const Dashboard = () => {
     
     if (userInfo) {
       try {
-        const parsedUser = JSON.parse(userInfo) as User;
+        const parsedUser = JSON.parse(userInfo) as UserData;
         setUser(parsedUser);
         // Set default active tab based on user account type
         if (parsedUser.account_type === "Investor") {
@@ -63,7 +63,7 @@ const Dashboard = () => {
 
   // Create default user if needed
   const createDefaultUser = () => {
-    const defaultUser: User = {
+    const defaultUser: UserData = {
       id: crypto.randomUUID(),
       username: "demo_sme",
       email: "sme@fundora.com",
@@ -89,11 +89,11 @@ const Dashboard = () => {
   };
   
   // Initialize sample users if needed
-  const initializeUsers = (currentUser: User) => {
+  const initializeUsers = (currentUser: UserData) => {
     const existingUsers = localStorage.getItem(DB_KEYS.USERS);
     if (!existingUsers || JSON.parse(existingUsers).length === 0) {
       // Create sample SME and Investor users
-      const smeUser: User = {
+      const smeUser: UserData = {
         id: currentUser.id,
         username: currentUser.username,
         email: currentUser.email,
@@ -106,7 +106,7 @@ const Dashboard = () => {
         updated_at: currentUser.updated_at
       };
       
-      const investorUser: User = {
+      const investorUser: UserData = {
         id: crypto.randomUUID(),
         username: "demo_investor",
         email: "investor@fundora.com",
@@ -145,7 +145,7 @@ const Dashboard = () => {
   const switchAccountType = () => {
     if (user) {
       const newAccountType = user.account_type === "SME" ? "Investor" : "SME";
-      const updatedUser: User = { ...user, account_type: newAccountType };
+      const updatedUser: UserData = { ...user, account_type: newAccountType };
       localStorage.setItem(DB_KEYS.USER, JSON.stringify(updatedUser));
       setUser(updatedUser);
       setActiveTab(newAccountType === "SME" ? "create" : "invest");
