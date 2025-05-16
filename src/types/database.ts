@@ -1,18 +1,24 @@
 
 // Database Types
 
-// User type
+// User type aligning with MongoDB schema
 export interface User {
-  id: string;
+  id?: string; // For UI purposes
+  _id?: { $oid: string }; // MongoDB ObjectId
+  __v?: number;
   username: string;
   email: string;
-  password_hash: string;
+  password_hash?: string;
+  password?: string; // For form input
   full_name: string;
   profile_image: string | null;
   account_type: 'SME' | 'Investor';
   eth_address: string;
-  created_at: string;
-  updated_at: string;
+  walletAddress?: string; // Alternative field name
+  createdAt?: { $date: string }; // MongoDB Date format
+  updatedAt?: { $date: string }; // MongoDB Date format
+  created_at?: string; // For UI state
+  updated_at?: string; // For UI state
   isLoggedIn?: boolean; // UI state, not stored in DB
   walletType?: string; // For UI, not in DB schema
 }

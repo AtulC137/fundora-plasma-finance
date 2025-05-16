@@ -2,22 +2,12 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogDescription, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogTrigger
-} from "@/components/ui/dialog";
-import WalletConnect from '@/components/WalletConnect';
 import ProfileButton from '@/components/ProfileButton';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [username, setUsername] = useState("");
-  const [dialogOpen, setDialogOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -27,30 +17,15 @@ const Header = () => {
     if (user) {
       const userData = JSON.parse(user);
       setIsLoggedIn(true);
-      setUsername(userData.email || "User");
+      setUsername(userData.email || userData.username || "User");
     }
   }, []);
-
-  // Handler for successful account creation
-  const handleAccountCreated = (newUsername: string) => {
-    setUsername(newUsername);
-    setIsLoggedIn(true);
-    setDialogOpen(false);
-  };
 
   const handleLogout = () => {
     localStorage.removeItem("user");
     setIsLoggedIn(false);
     setUsername("");
     navigate("/");
-  };
-
-  const handleGetStarted = () => {
-    if (isLoggedIn) {
-      navigate("/invoice");
-    } else {
-      navigate("/login");
-    }
   };
 
   return (
@@ -88,8 +63,9 @@ const Header = () => {
           <Button 
             variant="outline" 
             className="glass-morphism"
+            onClick={() => navigate("/documentation")}
           >
-            About Us
+            Documentation
           </Button>
           
           {!isLoggedIn ? (
@@ -101,24 +77,12 @@ const Header = () => {
               >
                 Login
               </Button>
-              <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button 
-                    className="bg-gradient-to-r from-fundora-blue to-fundora-cyan text-white"
-                  >
-                    Create Account
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="glass-morphism border border-fundora-blue/30 max-w-md">
-                  <DialogHeader>
-                    <DialogTitle className="text-center text-2xl font-orbitron text-gradient">Connect Your Wallet</DialogTitle>
-                    <DialogDescription className="text-center text-gray-300">
-                      Select a wallet to create your account
-                    </DialogDescription>
-                  </DialogHeader>
-                  <WalletConnect onAccountCreated={handleAccountCreated} />
-                </DialogContent>
-              </Dialog>
+              <Button 
+                className="bg-gradient-to-r from-fundora-blue to-fundora-cyan text-white"
+                onClick={() => navigate("/register")}
+              >
+                Create Account
+              </Button>
             </>
           ) : (
             <ProfileButton username={username} onLogout={handleLogout} />
@@ -177,8 +141,12 @@ const Header = () => {
             <Button 
               variant="outline" 
               className="glass-morphism"
+              onClick={() => {
+                navigate("/documentation");
+                setIsMenuOpen(false);
+              }}
             >
-              About Us
+              Documentation
             </Button>
             
             {!isLoggedIn ? (
@@ -193,24 +161,15 @@ const Header = () => {
                 >
                   Login
                 </Button>
-                <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button 
-                      className="bg-gradient-to-r from-fundora-blue to-fundora-cyan text-white"
-                    >
-                      Create Account
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="glass-morphism border border-fundora-blue/30 max-w-md">
-                    <DialogHeader>
-                      <DialogTitle className="text-center text-2xl font-orbitron text-gradient">Connect Your Wallet</DialogTitle>
-                      <DialogDescription className="text-center text-gray-300">
-                        Select a wallet to create your account
-                      </DialogDescription>
-                    </DialogHeader>
-                    <WalletConnect onAccountCreated={handleAccountCreated} />
-                  </DialogContent>
-                </Dialog>
+                <Button 
+                  className="bg-gradient-to-r from-fundora-blue to-fundora-cyan text-white"
+                  onClick={() => {
+                    navigate("/register");
+                    setIsMenuOpen(false);
+                  }}
+                >
+                  Create Account
+                </Button>
               </>
             ) : (
               <Button 

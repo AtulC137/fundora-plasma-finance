@@ -5,27 +5,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogDescription, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogTrigger
-} from "@/components/ui/dialog";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { LogIn, UserPlus } from "lucide-react";
 import FloatingElements from "@/components/FloatingElements";
-import WalletConnect from "@/components/WalletConnect";
+import { User } from "@/types/database";
 
 const Login = () => {
-  const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
+  const [identifier, setIdentifier] = useState(""); // Email or username
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [userRole, setUserRole] = useState("sme"); // Default role
   const navigate = useNavigate();
 
   // Check if user is already logged in
@@ -45,20 +33,14 @@ const Login = () => {
 
     // In a real app, this would authenticate with a backend
     setTimeout(() => {
-      // Get all users from localStorage (in a real app, this would be a database query)
+      // Get all users from localStorage
       const users = JSON.parse(localStorage.getItem("users") || "[]");
       
-      // If user created an account via WalletConnect, it might be stored directly as "user"
-      const singleUser = JSON.parse(localStorage.getItem("user") || "null");
-      
-      // Check if the email and password match
-      const matchedUser = users.find((user: any) => 
-        (user.email === email || user.username === username) && 
+      // Check if the email/username and password match
+      const matchedUser = users.find((user: User) => 
+        (user.email === identifier || user.username === identifier) && 
         user.password_hash === password
-      ) || (singleUser && 
-        ((singleUser.email === email || singleUser.username === username) && 
-        singleUser.password_hash === password) ? 
-        singleUser : null);
+      );
       
       if (matchedUser) {
         // Update user object with isLoggedIn flag
@@ -76,13 +58,6 @@ const Login = () => {
     }, 1000);
   };
 
-  // Handler for successful account creation
-  const handleAccountCreated = (newUsername: string) => {
-    setUsername(newUsername);
-    setDialogOpen(false);
-    toast.success(`Account created as ${userRole === "sme" ? "an SME" : "an Investor"}! You can now log in.`);
-  };
-
   return (
     <div className="min-h-screen bg-fundora-dark text-white overflow-hidden">
       <FloatingElements />
@@ -97,31 +72,17 @@ const Login = () => {
           </CardHeader>
           
           <form onSubmit={handleLogin}>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4">              
               <div className="space-y-2">
-                <Label className="text-white">I am a:</Label>
-                <Tabs 
-                  defaultValue="sme" 
-                  className="w-full" 
-                  value={userRole} 
-                  onValueChange={setUserRole}
-                >
-                  <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="sme">SME</TabsTrigger>
-                    <TabsTrigger value="investor">Investor</TabsTrigger>
-                  </TabsList>
-                </Tabs>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="username" className="text-white">Username or Email</Label>
+                <Label htmlFor="identifier" className="text-white">Email or Username</Label>
                 <Input 
-                  id="username" 
+                  id="identifier" 
                   type="text" 
-                  placeholder="username or email"
+                  placeholder="email or username"
                   className="bg-white/10 border-fundora-blue/30 text-white"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  value={identifier}
+                  onChange={(e) => setIdentifier(e.target.value)}
+                  required
                 />
               </div>
               
@@ -151,31 +112,14 @@ const Login = () => {
               
               <div className="text-center text-sm text-gray-400">
                 New user? 
-                <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button 
-                      variant="link" 
-                      className="text-fundora-blue pl-1"
-                    >
-                      <UserPlus className="mr-1 h-4 w-4" /> 
-                      Sign up
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="glass-morphism border border-fundora-blue/30 max-w-md">
-                    <DialogHeader>
-                      <DialogTitle className="text-center text-2xl font-orbitron text-gradient">
-                        Create {userRole === "sme" ? "SME" : "Investor"} Account
-                      </DialogTitle>
-                      <DialogDescription className="text-center text-gray-300">
-                        Connect your wallet to create your {userRole === "sme" ? "Business" : "Investor"} account
-                      </DialogDescription>
-                    </DialogHeader>
-                    <WalletConnect 
-                      onAccountCreated={handleAccountCreated} 
-                      userRole={userRole}
-                    />
-                  </DialogContent>
-                </Dialog>
+                <Button 
+                  variant="link" 
+                  className="text-fundora-blue pl-1"
+                  onClick={() => navigate("/register")}
+                >
+                  <UserPlus className="mr-1 h-4 w-4" /> 
+                  Create Account
+                </Button>
               </div>
             </CardFooter>
           </form>
