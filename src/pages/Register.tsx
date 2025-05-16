@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { User } from "@/types/database";
 import FloatingElements from "@/components/FloatingElements";
 import { LogIn, UserPlus } from "lucide-react";
+import WalletConnect from "@/components/WalletConnect";
 
 const Register = () => {
   const [username, setUsername] = useState("");
@@ -22,11 +23,21 @@ const Register = () => {
   const [accountType, setAccountType] = useState<"SME" | "Investor">("SME");
   const navigate = useNavigate();
 
+  const handleWalletConnect = (address: string) => {
+    setEthAddress(address);
+    toast.success("Wallet connected successfully!");
+  };
+
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (password !== confirmPassword) {
       toast.error("Passwords do not match");
+      return;
+    }
+    
+    if (!ethAddress) {
+      toast.error("Please connect your wallet first");
       return;
     }
     
@@ -154,16 +165,8 @@ const Register = () => {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="ethAddress" className="text-white">Ethereum Address</Label>
-                <Input 
-                  id="ethAddress" 
-                  type="text" 
-                  placeholder="0x..."
-                  className="bg-white/10 border-fundora-blue/30 text-white"
-                  value={ethAddress}
-                  onChange={(e) => setEthAddress(e.target.value)}
-                  required
-                />
+                <Label className="text-white">Ethereum Wallet</Label>
+                <WalletConnect onConnect={handleWalletConnect} walletAddress={ethAddress} />
               </div>
               
               <div className="space-y-2">

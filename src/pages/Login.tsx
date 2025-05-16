@@ -31,31 +31,28 @@ const Login = () => {
     e.preventDefault();
     setIsLoading(true);
 
-    // In a real app, this would authenticate with a backend
-    setTimeout(() => {
-      // Get all users from localStorage
-      const users = JSON.parse(localStorage.getItem("users") || "[]");
+    // Get all users from localStorage
+    const users = JSON.parse(localStorage.getItem("users") || "[]");
+    
+    // Check if the email/username and password match
+    const matchedUser = users.find((user: User) => 
+      (user.email === identifier || user.username === identifier) && 
+      user.password_hash === password
+    );
+    
+    if (matchedUser) {
+      // Update user object with isLoggedIn flag
+      matchedUser.isLoggedIn = true;
       
-      // Check if the email/username and password match
-      const matchedUser = users.find((user: User) => 
-        (user.email === identifier || user.username === identifier) && 
-        user.password_hash === password
-      );
+      // Save updated user data
+      localStorage.setItem("user", JSON.stringify(matchedUser));
       
-      if (matchedUser) {
-        // Update user object with isLoggedIn flag
-        matchedUser.isLoggedIn = true;
-        
-        // Save updated user data
-        localStorage.setItem("user", JSON.stringify(matchedUser));
-        
-        toast.success("Successfully logged in!");
-        navigate("/dashboard");
-      } else {
-        toast.error("Invalid email/username or password");
-      }
-      setIsLoading(false);
-    }, 1000);
+      toast.success("Successfully logged in!");
+      navigate("/dashboard");
+    } else {
+      toast.error("Invalid email/username or password");
+    }
+    setIsLoading(false);
   };
 
   return (
